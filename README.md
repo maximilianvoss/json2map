@@ -1,5 +1,5 @@
 # Jsontable
-Transforming JSON into a hashmap for easier access and processing in C.
+Transforming JSON into a key/value pair for easier access and processing in C.
 
 Starting with a JSON object, looking like:
 
@@ -28,7 +28,7 @@ Starting with a JSON object, looking like:
 }
 ```
 
-Will be turned into:
+Will be turned into a key/value pair looking like:
 ```
 test._id.$oid = 566950d1afc4a3c1d86fcdfb
 test.name = picture
@@ -43,3 +43,6 @@ test.number = 1234
 test.true = true
 test.false = false
 ```
+
+All keys and value are stored as strings. To check for primitives it might be easiest to check for digits and the values "null", "true" and "false". The representation of the key/value pair can be changed easily as a *hook method* has to be defined and registered. So your key/value pair representation can be used quite easily.  
+For more information consult example.c
