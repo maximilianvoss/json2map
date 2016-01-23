@@ -6,6 +6,14 @@
 #include <stdlib.h>
 #include "jsmn.h"
 #define STRING_STD_LENGTH 1<<10
-#define JSON_MAX_TOKENS 128
+#define JSON_MAX_TOKENS 1<<8
+
+int jsontable_parse(char *jsonString);
+void jsontable_registerHook( void *data, void* method );
+void jsontable_setTokenValue(char *jsonString, jsmntok_t *token, char *buffer);
+char *jsontable_concatPaths(char *parent, char *key, int arrayIdx);
+int jsontable_calcEnd(jsmntok_t *token, int start, int end);
+int jsontable_parseArray(char *path, char *jsonString, jsmntok_t *token, int start, int end);
+int jsontable_parseObject(char *path, char *jsonString, jsmntok_t *token, int start, int end);
 
 #endif
