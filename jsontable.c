@@ -1,9 +1,9 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include "jsmn.h"
-#define STRING_STD_LENGTH 1<<10
-#define JSON_MAX_TOKENS 128
+#include "jsontable.h"
+
+static void (* hookMethod) (void *data, char *key, char *value);
+static void *hookMethodData;
+
+int json_parse_object(char *path, char *jsonString, jsmntok_t *token, int start, int end);
 
 
 void json_setTokenValue(char *jsonString, jsmntok_t *token, char *buffer) {
@@ -11,74 +11,49 @@ void json_setTokenValue(char *jsonString, jsmntok_t *token, char *buffer) {
 }
 
 
-/*
-void json_calcPath(char *jsonString, jsmntok_t token[], int point, char *tokenPath) {
+char *json_concatPaths(char *parent, char *key, int arrayIdx) {
 
-	char tmp[STRING_STD_LENGTH];
+	// TODO: organize code a little nicer
+	char *path;
+	char arrayIdxBuff[10];
+	int arrayIdLen = 0;
 
-	if ( point < 0 ) {
-		return;
+	int keyLen = strlen(key);
+
+	if ( arrayIdx >= 0 ) {
+		sprintf(arrayIdxBuff, "[%d]", arrayIdx);
+		arrayIdLen += strlen(arrayIdxBuff);
 	}
 
-	memset(tmp, '\0', STRING_STD_LENGTH);
+	if ( parent == NULL ) {
+		path = (char *) calloc(sizeof(char), keyLen + arrayIdLen + 1);
+		memcpy(path, key, keyLen);
 
-	json_calcPath(jsonString, token, token[point].parent - 1, tokenPath);
+		if ( arrayIdx >= 0 ) {
+			memcpy(path + keyLen, arrayIdxBuff, arrayIdLen);
+		}
+	} else if ( key == NULL ) {
+		int parentLen = strlen(parent);
+		path = (char *) calloc(sizeof(char), parentLen + arrayIdLen + 1);
+		memcpy(path, parent, parentLen);
 
-	if ( tokenPath[0] != '\0') {
-		strcat(tokenPath, ".");
+		if ( arrayIdx >= 0 ) {
+			memcpy(path + parentLen, arrayIdxBuff, arrayIdLen);
+		} 
+	} else {
+		int parentLen = strlen(parent);
+		path = (char *) calloc(sizeof(char), parentLen + keyLen + arrayIdLen + 2);
+		memcpy(path, parent, parentLen);
+		path[parentLen] = '.';
+		memcpy(path + parentLen + 1, key, keyLen);
+
+		if ( arrayIdx >= 0 ) {
+			memcpy(path + parentLen + keyLen + 1, arrayIdxBuff, arrayIdLen);
+		}
 	}
-	json_setTokenValue(jsonString, &token[point], tmp);
-	strcat(tokenPath, tmp);
-	
+	return path;
 }
 
-
-char *json_parseStringObject (char *jsonString, jsmntok_t *token, int pos ) {
-	char *tokenValue = NULL;
-	if ( token[pos].type == JSMN_STRING ) {
-		tokenValue = (char *) calloc ( token[pos].end - token[pos].start + 1, sizeof(char) );
-		json_setTokenValue(jsonString, &token[pos], tokenValue);
-	}
-	return tokenValue;
-}
-
-
-void json_flatten(char *jsonString, jsmntok_t *token, int count) {
-	char tokenName[STRING_STD_LENGTH];
-	char *tokenValue;
-	char tokenPath[STRING_STD_LENGTH];
-
-	memset(tokenName, '\0', STRING_STD_LENGTH);
-	memset(tokenPath, '\0', STRING_STD_LENGTH);
-
-	for ( int i = 1; i < count; i++ ) {
-		if ( token[i].type == JSMN_STRING ) {
-			json_setTokenValue(jsonString, &token[i], tokenName);
-			json_calcPath(jsonString, token, i, tokenPath);
-
-			tokenValue = json_parseStringObject(jsonString, token, i + 1);
-
-			//json_setTokenValue(jsonString, &token[i + 1], tokenValue);
-			i++;		
-		}
-
-		if ( token[i].type == JSMN_ARRAY ) {
-			printf("HAHA\n");
-			printf("%d\t%d\n", token[i].start, token[i].end);
-		}
-		if ( token[i].type == JSMN_OBJECT ) {
-			printf("HUHU\n");
-			printf("%d\t%d\n", token[i].start, token[i].end);
-		}
-
-		printf("tokenName: %s\ntokenValue: %s\ntokenPath: %s\n\n", tokenName, tokenValue, tokenPath);
-		memset(tokenName, '\0', STRING_STD_LENGTH);
-		free(tokenValue);
-		memset(tokenPath, '\0', STRING_STD_LENGTH);
-
-	}
-}
-//*/
 
 int json_calc_end(jsmntok_t *token, int start, int end) {
 	// TODO: optimize search
@@ -91,56 +66,97 @@ int json_calc_end(jsmntok_t *token, int start, int end) {
 }
 
 
-void json_parse_array(char *jsonString, jsmntok_t *token, int start, int end) {
-	int i;
-	char buffer[STRING_STD_LENGTH];
+int json_parse_array(char *path, char *jsonString, jsmntok_t *token, int start, int end) {
 	int newEnd;
-printf ("array\n");
-	for ( i = start; i < end; i++ ) {
-		if ( token[i].type == JSMN_OBJECT ) {
-			/*newEnd = json_calc_end(token, i, end);
-			json_parse_object(jsonString, token, i, newEnd);
-			i = newEnd; */
-		} else if ( token[i].type == JSMN_ARRAY ) {
-			newEnd = json_calc_end(token, i, end);
-			json_parse_array(jsonString, token, i + 1, newEnd);
-			i = newEnd;
-		} else if ( token[i].type == JSMN_STRING ) {
-			json_setTokenValue(jsonString, &token[i], buffer);
-			printf("%s\n", buffer);
-			memset(buffer, '\0', STRING_STD_LENGTH);
-		} else {
-			printf("dump\n");
+	char buffer[STRING_STD_LENGTH];
+	char *pathBuff;
+	int count = 0;
+
+	int i = start;
+	while ( i < end && i > 0) {
+
+		pathBuff = json_concatPaths(NULL, path, count);
+		count++;
+
+		switch ( token[i].type ) {
+			case JSMN_OBJECT:
+				newEnd = json_calc_end(token, i, end);
+				i = json_parse_object(pathBuff, jsonString, token, i + 1, newEnd + 1);
+				break;
+			case JSMN_STRING:
+			case JSMN_PRIMITIVE:
+				memset(buffer, '\0', STRING_STD_LENGTH);
+				json_setTokenValue(jsonString, &token[i], buffer);	
+				hookMethod(hookMethodData, pathBuff, buffer);
+				memset(buffer, '\0', STRING_STD_LENGTH);
+				i++;
+				break;
+			default:
+				printf("ERROR: Not defined type\n");
+				return -1;
 		}
+		free(pathBuff);
 	}
+
+	if ( i < 0 ) {
+		return i;
+	}
+	return end;
 }
 
-void json_parse_object(char *jsonString, jsmntok_t *token, int start, int end) {
-	int newEnd;
-	int i;
-	char buffer[STRING_STD_LENGTH];
 
-	for ( i = start; i < end; i++ ) {
-		printf("%d\n", i);
-		if ( token[i].type == JSMN_OBJECT ) {
-			newEnd = json_calc_end(token, i, end);
-			json_parse_object(jsonString, token, i + 1, newEnd);
-			i = newEnd;
-		} else if ( token[i].type == JSMN_ARRAY ) {
-			newEnd = json_calc_end(token, i, end);
-			json_parse_array(jsonString, token, i + 1, newEnd);
-			i = newEnd;
-		} else if ( token[i].type == JSMN_STRING ) {
-			json_setTokenValue(jsonString, &token[i], buffer);
-			printf("%s\n", buffer);
+int json_parse_object(char *path, char *jsonString, jsmntok_t *token, int start, int end) {
+	int newEnd;
+	char buffer[STRING_STD_LENGTH];
+	char *pathBuff;
+
+	int i = start;
+	while ( i < end && i > 0) {
+		if ( token[i].type == JSMN_STRING ) {
+			memset(buffer, '\0', STRING_STD_LENGTH);
+			json_setTokenValue(jsonString, &token[i], buffer);	
+
+			pathBuff = json_concatPaths(path, buffer, -1);
+
 			memset(buffer, '\0', STRING_STD_LENGTH);
 		} else {
-			printf("dump\n");
+			printf("ERROR: Name of object has to be a string\n");
+			return -1;
+		}
+		i++;
+
+		switch ( token[i].type ) {
+			case JSMN_OBJECT:
+				newEnd = json_calc_end(token, i, end);
+				i = json_parse_object(pathBuff, jsonString, token, i + 1, newEnd + 1);
+				break;
+			case JSMN_STRING:
+			case JSMN_PRIMITIVE:
+				memset(buffer, '\0', STRING_STD_LENGTH);
+				json_setTokenValue(jsonString, &token[i], buffer);	
+				hookMethod(hookMethodData, pathBuff, buffer);
+				memset(buffer, '\0', STRING_STD_LENGTH);
+				i++;
+				break;
+			case JSMN_ARRAY:
+				newEnd = json_calc_end(token, i, end);
+				i = json_parse_array(pathBuff, jsonString, token, i + 1, newEnd + 1);
+				break;
+			default:
+				printf("ERROR: Not defined type\n");
+				return -1;
 		}
 	}
+
+	free(pathBuff);
+	if ( i < 0 ) {
+		return i;
+	}
+	return end;
 }
 
-void json_parse(char *jsonString) {
+
+int json_parse(char *jsonString) {
 	jsmn_parser p;
 	jsmntok_t token[JSON_MAX_TOKENS];
 
@@ -148,20 +164,30 @@ void json_parse(char *jsonString) {
 
 	int count = jsmn_parse(&p, jsonString, strlen(jsonString), token, JSON_MAX_TOKENS);
 	if ( count < 0 ) {
-		return;
+		return -1;
 	}
 
 	if ( count < 1 || token[0].type != JSMN_OBJECT) {
-		return;
+		return -1;
 	}
 
-	json_parse_object(jsonString, token, 1, count);
+	return json_parse_object(NULL, jsonString, token, 1, count);
+}
+
+
+void json_registerHook( void *data, void* method ) {
+	hookMethod = method;
+	hookMethodData = data;
+}
+
+
+void json_hookMethod(void *data, char *key, char *value) {
+	printf("%s = %s\n", key, value);
 }
 
 
 int main(int argc, char **argv) {
-	printf("go\n");
-	json_parse("{ \"test\": { \"_id\" : { \"$oid\" : \"566950d1afc4a3c1d86fcdfb\" } }, \"name\" : \"picture\", \"file\" : \"/var/www/html/pictureIn.png\", \"moep\": [\"a\", \"b\", \"c\", \"d\"] }");
-	printf("end\n");
+	json_registerHook(NULL, &json_hookMethod);
+	json_parse("{ \"test\": { \"_id\" : { \"$oid\" : \"566950d1afc4a3c1d86fcdfb\" } }, \"name\" : \"picture\", \"file\" : \"/var/www/html/pictureIn.png\", \"moep\": [\"a\", \"b\", \"c\", \"d\", { \"test\": \"blubb\"}], \"bla\": null, \"number\": 1234, \"true\": true, \"false\": false }");
 	return 0;
 }
