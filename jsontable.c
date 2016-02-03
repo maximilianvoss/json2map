@@ -54,7 +54,8 @@ char *jsontable_concatPaths(char *parent, char *key, int arrayIdx) {
 
 int jsontable_calcEnd(jsmntok_t *token, int start, int end) {
 	// TODO: optimize search
-	for ( int i = start + 1; i < end; i++ ) {
+	int i;
+	for ( i = start + 1; i < end; i++ ) {
 		if ( token[i].start > token[start].end) {
 			return i - 1;
 		}
