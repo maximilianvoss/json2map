@@ -15,7 +15,7 @@ char *jsontable_concatPaths(char *parent, char *key, int arrayIdx) {
 	char arrayIdxBuff[10];
 	int arrayIdLen = 0;
 
-	int keyLen = strlen(key);
+	long keyLen = strlen(key);
 
 	if ( arrayIdx >= 0 ) {
 		sprintf(arrayIdxBuff, "[%d]", arrayIdx);
@@ -29,25 +29,28 @@ char *jsontable_concatPaths(char *parent, char *key, int arrayIdx) {
 		if ( arrayIdx >= 0 ) {
 			memcpy(path + keyLen, arrayIdxBuff, arrayIdLen);
 		}
-	} else if ( key == NULL ) {
-		int parentLen = strlen(parent);
+        return path;
+	}
+    if ( key == NULL ) {
+		long parentLen = strlen(parent);
 		path = (char *) calloc(sizeof(char), parentLen + arrayIdLen + 1);
 		memcpy(path, parent, parentLen);
 
 		if ( arrayIdx >= 0 ) {
 			memcpy(path + parentLen, arrayIdxBuff, arrayIdLen);
-		} 
-	} else {
-		int parentLen = strlen(parent);
-		path = (char *) calloc(sizeof(char), parentLen + keyLen + arrayIdLen + 2);
-		memcpy(path, parent, parentLen);
-		path[parentLen] = '.';
-		memcpy(path + parentLen + 1, key, keyLen);
-
-		if ( arrayIdx >= 0 ) {
-			memcpy(path + parentLen + keyLen + 1, arrayIdxBuff, arrayIdLen);
 		}
+        return path;
 	}
+    
+    long parentLen = strlen(parent);
+    path = (char *) calloc(sizeof(char), parentLen + keyLen + arrayIdLen + 2);
+    memcpy(path, parent, parentLen);
+    path[parentLen] = '.';
+    memcpy(path + parentLen + 1, key, keyLen);
+
+    if ( arrayIdx >= 0 ) {
+        memcpy(path + parentLen + keyLen + 1, arrayIdxBuff, arrayIdLen);
+    }
 	return path;
 }
 
@@ -93,7 +96,8 @@ int jsontable_parseArray(char *path, char *jsonString, jsmntok_t *token, int sta
 				printf("ERROR: Not defined type\n");
 				return -1;
 		}
-		free(pathBuff);
+        
+        free(pathBuff);
 	}
 
 	if ( i < 0 ) {
@@ -106,7 +110,7 @@ int jsontable_parseArray(char *path, char *jsonString, jsmntok_t *token, int sta
 int jsontable_parseObject(char *path, char *jsonString, jsmntok_t *token, int start, int end) {
 	int newEnd;
 	char buffer[STRING_STD_LENGTH];
-	char *pathBuff;
+	char *pathBuff = NULL;
 
 	int i = start;
 	while ( i < end && i > 0) {
@@ -144,9 +148,9 @@ int jsontable_parseObject(char *path, char *jsonString, jsmntok_t *token, int st
 				printf("ERROR: Not defined type\n");
 				return -1;
 		}
+        free(pathBuff);
 	}
-
-	free(pathBuff);
+    
 	if ( i < 0 ) {
 		return i;
 	}
