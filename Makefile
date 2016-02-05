@@ -5,7 +5,7 @@ CFLAGS=-Wall -ggdb -g -O2 -fstack-protector-strong -Wformat -Werror=format-secur
 # Sources
 CSOURCES=$(wildcard *.c)
 OBJECTS=$(CSOURCES:.c=.o)
-EXECUTABLE=jsonparser
+EXECUTABLE=example
 
 all: $(EXECUTABLE)
 

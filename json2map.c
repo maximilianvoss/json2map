@@ -1,15 +1,15 @@
-#include "jsontable.h"
+#include "json2map.h"
 
-static void (* jsontable_hookMethod) (void *data, char *key, char *value);
-static void *jsontable_hookMethodData;
+static void (* json2map_hookMethod) (void *data, char *key, char *value);
+static void *json2map_hookMethodData;
 
 
-void jsontable_setTokenValue(char *jsonString, jsmntok_t *token, char *buffer) {
+void json2map_setTokenValue(char *jsonString, jsmntok_t *token, char *buffer) {
 	memcpy(buffer, jsonString + token->start, token->end - token->start);
 }
 
 
-char *jsontable_concatPaths(char *parent, char *key, int arrayIdx) {
+char *json2map_concatPaths(char *parent, char *key, int arrayIdx) {
 	// TODO: organize code a little nicer
 	char *path;
 	char arrayIdxBuff[10];
@@ -55,7 +55,7 @@ char *jsontable_concatPaths(char *parent, char *key, int arrayIdx) {
 }
 
 
-int jsontable_calcEnd(jsmntok_t *token, int start, int end) {
+int json2map_calcEnd(jsmntok_t *token, int start, int end) {
 	// TODO: optimize search
 	int i;
 	for ( i = start + 1; i < end; i++ ) {
@@ -67,7 +67,7 @@ int jsontable_calcEnd(jsmntok_t *token, int start, int end) {
 }
 
 
-int jsontable_parseArray(char *path, char *jsonString, jsmntok_t *token, int start, int end) {
+int json2map_parseArray(char *path, char *jsonString, jsmntok_t *token, int start, int end) {
 	int newEnd;
 	char buffer[STRING_STD_LENGTH];
 	char *pathBuff;
@@ -76,19 +76,19 @@ int jsontable_parseArray(char *path, char *jsonString, jsmntok_t *token, int sta
 	int i = start;
 	while ( i < end && i > 0) {
 
-		pathBuff = jsontable_concatPaths(NULL, path, count);
+		pathBuff = json2map_concatPaths(NULL, path, count);
 		count++;
 
 		switch ( token[i].type ) {
 			case JSMN_OBJECT:
-				newEnd = jsontable_calcEnd(token, i, end);
-				i = jsontable_parseObject(pathBuff, jsonString, token, i + 1, newEnd + 1);
+				newEnd = json2map_calcEnd(token, i, end);
+				i = json2map_parseObject(pathBuff, jsonString, token, i + 1, newEnd + 1);
 				break;
 			case JSMN_STRING:
 			case JSMN_PRIMITIVE:
 				memset(buffer, '\0', STRING_STD_LENGTH);
-				jsontable_setTokenValue(jsonString, &token[i], buffer);	
-				jsontable_hookMethod(jsontable_hookMethodData, pathBuff, buffer);
+				json2map_setTokenValue(jsonString, &token[i], buffer);	
+				json2map_hookMethod(json2map_hookMethodData, pathBuff, buffer);
 				memset(buffer, '\0', STRING_STD_LENGTH);
 				i++;
 				break;
@@ -107,7 +107,7 @@ int jsontable_parseArray(char *path, char *jsonString, jsmntok_t *token, int sta
 }
 
 
-int jsontable_parseObject(char *path, char *jsonString, jsmntok_t *token, int start, int end) {
+int json2map_parseObject(char *path, char *jsonString, jsmntok_t *token, int start, int end) {
 	int newEnd;
 	char buffer[STRING_STD_LENGTH];
 	char *pathBuff = NULL;
@@ -116,9 +116,9 @@ int jsontable_parseObject(char *path, char *jsonString, jsmntok_t *token, int st
 	while ( i < end && i > 0) {
 		if ( token[i].type == JSMN_STRING ) {
 			memset(buffer, '\0', STRING_STD_LENGTH);
-			jsontable_setTokenValue(jsonString, &token[i], buffer);	
+			json2map_setTokenValue(jsonString, &token[i], buffer);	
 
-			pathBuff = jsontable_concatPaths(path, buffer, -1);
+			pathBuff = json2map_concatPaths(path, buffer, -1);
 
 			memset(buffer, '\0', STRING_STD_LENGTH);
 		} else {
@@ -129,20 +129,20 @@ int jsontable_parseObject(char *path, char *jsonString, jsmntok_t *token, int st
 
 		switch ( token[i].type ) {
 			case JSMN_OBJECT:
-				newEnd = jsontable_calcEnd(token, i, end);
-				i = jsontable_parseObject(pathBuff, jsonString, token, i + 1, newEnd + 1);
+				newEnd = json2map_calcEnd(token, i, end);
+				i = json2map_parseObject(pathBuff, jsonString, token, i + 1, newEnd + 1);
 				break;
 			case JSMN_STRING:
 			case JSMN_PRIMITIVE:
 				memset(buffer, '\0', STRING_STD_LENGTH);
-				jsontable_setTokenValue(jsonString, &token[i], buffer);	
-				jsontable_hookMethod(jsontable_hookMethodData, pathBuff, buffer);
+				json2map_setTokenValue(jsonString, &token[i], buffer);	
+				json2map_hookMethod(json2map_hookMethodData, pathBuff, buffer);
 				memset(buffer, '\0', STRING_STD_LENGTH);
 				i++;
 				break;
 			case JSMN_ARRAY:
-				newEnd = jsontable_calcEnd(token, i, end);
-				i = jsontable_parseArray(pathBuff, jsonString, token, i + 1, newEnd + 1);
+				newEnd = json2map_calcEnd(token, i, end);
+				i = json2map_parseArray(pathBuff, jsonString, token, i + 1, newEnd + 1);
 				break;
 			default:
 				printf("ERROR: Not defined type\n");
@@ -158,7 +158,7 @@ int jsontable_parseObject(char *path, char *jsonString, jsmntok_t *token, int st
 }
 
 
-int jsontable_parse(char *jsonString) {
+int json2map_parse(char *jsonString) {
 	jsmn_parser p;
 	jsmntok_t token[JSON_MAX_TOKENS];
 
@@ -175,12 +175,12 @@ int jsontable_parse(char *jsonString) {
 		return -1;
 	}
 
-	return jsontable_parseObject(NULL, jsonString, token, 1, count);
+	return json2map_parseObject(NULL, jsonString, token, 1, count);
 }
 
 
-void jsontable_registerHook( void *data, void* method ) {
-	jsontable_hookMethod = method;
-	jsontable_hookMethodData = data;
+void json2map_registerHook( void *data, void* method ) {
+	json2map_hookMethod = method;
+	json2map_hookMethodData = data;
 }
 

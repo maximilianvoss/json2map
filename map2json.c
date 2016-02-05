@@ -1,11 +1,11 @@
-#include "jsonobject.h"
+#include "map2json.h"
 
 
-jsonobject_t* jsonobject_init(int count) {
-	jsonobject_t *obj;
+map2json_t* map2json_init(int count) {
+	map2json_t *obj;
 
-	obj = (jsonobject_t *) malloc (sizeof(jsonobject_t));
-	obj->pairs = (jsonobject_keyvalue_t *) calloc (sizeof(jsonobject_keyvalue_t), count);
+	obj = (map2json_t *) malloc (sizeof(map2json_t));
+	obj->pairs = (map2json_keyvalue_t *) calloc (sizeof(map2json_keyvalue_t), count);
 	obj->count = count;
 	obj->pos = 0;
 
@@ -13,7 +13,7 @@ jsonobject_t* jsonobject_init(int count) {
 }
 
 
-void jsonobject_push(jsonobject_t *obj, char* key, char* value) {
+void map2json_push(map2json_t *obj, char* key, char* value) {
 
 	if ( obj->pos < obj->count) {
 		unsigned long keyLen = strlen(key);
@@ -30,7 +30,7 @@ void jsonobject_push(jsonobject_t *obj, char* key, char* value) {
 }
 
 
-long jsonobject_checkArrayObject(char *key) {
+long map2json_checkArrayObject(char *key) {
     char *ptr = strchr(key, '[');
     if ( ptr && strchr (key, ']') ) {
         return ptr - key;
@@ -39,8 +39,8 @@ long jsonobject_checkArrayObject(char *key) {
 }
 
 
-jsonobject_tree_t* jsonobject_findTreeNode(jsonobject_tree_t *root, char *key) {
-	jsonobject_tree_t *obj;
+map2json_tree_t* map2json_findTreeNode(map2json_tree_t *root, char *key) {
+	map2json_tree_t *obj;
     
 	obj = root->children;
 	while ( obj != NULL ) {
@@ -53,10 +53,10 @@ jsonobject_tree_t* jsonobject_findTreeNode(jsonobject_tree_t *root, char *key) {
 }
 
 
-jsonobject_tree_t* jsonobject_createEmptyTreeObject(char *key) {
-	jsonobject_tree_t* obj;
+map2json_tree_t* map2json_createEmptyTreeObject(char *key) {
+	map2json_tree_t* obj;
 
-	obj = (jsonobject_tree_t *) malloc (sizeof(jsonobject_tree_t));
+	obj = (map2json_tree_t *) malloc (sizeof(map2json_tree_t));
 	obj->next = NULL;
 	obj->value = NULL;
 	obj->children = NULL;
@@ -75,7 +75,7 @@ jsonobject_tree_t* jsonobject_createEmptyTreeObject(char *key) {
 }
 
 
-long jsonobject_getArrayId(char *key) {
+long map2json_getArrayId(char *key) {
     char buffer[1<<8];
 
     if ( key == NULL ) {
@@ -91,7 +91,7 @@ long jsonobject_getArrayId(char *key) {
 }
 
 
-void jsonobject_storeValues(jsonobject_tree_t *obj, char *value) {
+void map2json_storeValues(map2json_tree_t *obj, char *value) {
     
     if ( obj->type == JSMN_ARRAY ) {
         return;
@@ -107,16 +107,16 @@ void jsonobject_storeValues(jsonobject_tree_t *obj, char *value) {
 }
 
 
-jsonobject_tree_t* jsonobject_createTree(jsonobject_t *obj) {
-	jsonobject_tree_t *treeRoot;
-	jsonobject_tree_t *treeObj;
-	jsonobject_tree_t *treeChild;
+map2json_tree_t* map2json_createTree(map2json_t *obj) {
+	map2json_tree_t *treeRoot;
+	map2json_tree_t *treeObj;
+	map2json_tree_t *treeChild;
 	stringlib_tokens_t nameTokens[64];
 	char buffer[128];
 	int i;
 	int j;
 
-	treeRoot = jsonobject_createEmptyTreeObject(NULL);
+	treeRoot = map2json_createEmptyTreeObject(NULL);
 
 	for ( i = 0; i < obj->count; i++ ) {
 		int count = stringlib_splitTokens(nameTokens, obj->pairs[i].key, '.', 64);
@@ -126,16 +126,16 @@ jsonobject_tree_t* jsonobject_createTree(jsonobject_t *obj) {
 			stringlib_getToken(&nameTokens[j], obj->pairs[i].key, buffer);
             
             long arrayId = -1;
-            long pos = jsonobject_checkArrayObject(buffer);
+            long pos = map2json_checkArrayObject(buffer);
             if ( pos ) {
-                arrayId = jsonobject_getArrayId(&buffer[pos]);
+                arrayId = map2json_getArrayId(&buffer[pos]);
                 buffer[pos] = '\0';
             }
             
-			treeChild = jsonobject_findTreeNode(treeObj, buffer);
+			treeChild = map2json_findTreeNode(treeObj, buffer);
             
 			if ( treeChild == NULL ) {
-                treeChild = jsonobject_createEmptyTreeObject(buffer);
+                treeChild = map2json_createEmptyTreeObject(buffer);
                 treeChild->next = treeObj->children;
                 treeObj->children = treeChild;
                 if ( pos ) {
@@ -144,7 +144,7 @@ jsonobject_tree_t* jsonobject_createTree(jsonobject_t *obj) {
             }
             
             if ( pos ) {
-                jsonobject_tree_t *arrayObj = jsonobject_createEmptyTreeObject(NULL);
+                map2json_tree_t *arrayObj = map2json_createEmptyTreeObject(NULL);
                 arrayObj->arrayId = arrayId;
                 
                 if ( treeChild->maxArrayId < arrayId ) {
@@ -158,13 +158,13 @@ jsonobject_tree_t* jsonobject_createTree(jsonobject_t *obj) {
                 treeObj = treeChild;
             }
 		}
-		jsonobject_storeValues(treeObj, obj->pairs[i].value);
+		map2json_storeValues(treeObj, obj->pairs[i].value);
 	}
 	return treeRoot;
 }
 
 
-char *jsonobject_createJsonString(char *buffer, jsonobject_tree_t *tree) {
+char *map2json_createJsonString(char *buffer, map2json_tree_t *tree) {
     char *pos = buffer;
 	unsigned long length;
 
@@ -187,7 +187,7 @@ char *jsonobject_createJsonString(char *buffer, jsonobject_tree_t *tree) {
 	if ( tree->type == JSMN_OBJECT ) {
 		memcpy(pos, "{ ", 2);
 		pos+= 2;
-		pos = jsonobject_createJsonString(pos, tree->children);
+		pos = map2json_createJsonString(pos, tree->children);
 		memcpy(pos, " }", 2);
 		pos += 2;
 	}
@@ -198,10 +198,10 @@ char *jsonobject_createJsonString(char *buffer, jsonobject_tree_t *tree) {
         pos += 2;
         
         for ( i = 0; i < tree->maxArrayId + 1; i++ ) {
-            jsonobject_tree_t *arrayObj = tree->arrayObjects;
+            map2json_tree_t *arrayObj = tree->arrayObjects;
             while ( arrayObj != NULL ) {
                 if ( arrayObj->arrayId == i ) {
-                    pos = jsonobject_createJsonString(pos, arrayObj);
+                    pos = map2json_createJsonString(pos, arrayObj);
                     
                     if ( i < tree->maxArrayId ) {
                         memcpy(pos, ", ", 2);
@@ -235,30 +235,30 @@ char *jsonobject_createJsonString(char *buffer, jsonobject_tree_t *tree) {
 	if ( tree->next != NULL ) {
 		memcpy(pos, ", ", 2);
 		pos += 2;
-		pos = jsonobject_createJsonString(pos, tree->next);
+		pos = map2json_createJsonString(pos, tree->next);
 	}
 
 	return pos;
 }
 
 
-char *jsonobject_create(jsonobject_t *obj) {
+char *map2json_create(map2json_t *obj) {
     obj->buffer = (char *) calloc(sizeof(char), 8192);
-    obj->tree = jsonobject_createTree(obj);
-	jsonobject_createJsonString(obj->buffer, obj->tree);
+    obj->tree = map2json_createTree(obj);
+	map2json_createJsonString(obj->buffer, obj->tree);
 	return obj->buffer;
 }
 
 
-void jsonobject_freeTreeMemory(jsonobject_tree_t *obj) {
+void map2json_freeTreeMemory(map2json_tree_t *obj) {
     
     if ( obj == NULL ) {
         return;
     }
     
-    jsonobject_freeTreeMemory(obj->arrayObjects);
-    jsonobject_freeTreeMemory(obj->children);
-    jsonobject_freeTreeMemory(obj->next);
+    map2json_freeTreeMemory(obj->arrayObjects);
+    map2json_freeTreeMemory(obj->children);
+    map2json_freeTreeMemory(obj->next);
     
     if ( obj->key != NULL ) {
         free(obj->key);
@@ -267,7 +267,7 @@ void jsonobject_freeTreeMemory(jsonobject_tree_t *obj) {
 }
 
 
-void jsonobject_destroy(jsonobject_t *obj) {
+void map2json_destroy(map2json_t *obj) {
 	int i;
 	for ( i = 0; i < obj->count; i++ ) {
 		free(obj->pairs[i].key);
@@ -276,5 +276,5 @@ void jsonobject_destroy(jsonobject_t *obj) {
 	free(obj->pairs);
 	free(obj);
     free(obj->buffer);
-    jsonobject_freeTreeMemory(obj->tree);
+    map2json_freeTreeMemory(obj->tree);
 }
