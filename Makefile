@@ -1,6 +1,6 @@
 # C Compiler
-CC=gcc
-CFLAGS=-Wall -g -O2 -fstack-protector-strong -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -DLINUX -D_REENTRANT -D_GNU_SOURCE -pthread -c
+CC=llvm-gcc
+CFLAGS=-Wall -ggdb -g -O2 -fstack-protector-strong -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -DLINUX -D_REENTRANT -D_GNU_SOURCE -pthread -c
 
 # Sources
 CSOURCES=$(wildcard *.c)
