@@ -1,5 +1,7 @@
 #include "json2map.h"
 
+
+// TODO: make thread save
 static void (* json2map_hookMethod) (void *data, char *key, char *value);
 static void *json2map_hookMethodData;
 
@@ -180,6 +182,7 @@ int json2map_parse(char *jsonString) {
 
 
 void json2map_registerHook( void *data, void* method ) {
+	//TODO: Thread safety
 	json2map_hookMethod = method;
 	json2map_hookMethodData = data;
 }

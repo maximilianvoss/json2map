@@ -2,6 +2,8 @@
 
 
 map2json_t* map2json_init(int count) {
+	// TODO: pairs should be a linked list
+	// TODO: init all variables in here
 	map2json_t *obj;
 
 	obj = (map2json_t *) malloc (sizeof(map2json_t));
@@ -108,6 +110,10 @@ void map2json_storeValues(map2json_tree_t *obj, char *value) {
 
 
 map2json_tree_t* map2json_createTree(map2json_t *obj) {
+	// TODO: buffer size should be adquat or configurable
+	// TODO: nameTokens should be configurable
+	// TOOO: re-org code nicely, specially the ARRAY case
+
 	map2json_tree_t *treeRoot;
 	map2json_tree_t *treeObj;
 	map2json_tree_t *treeChild;
@@ -165,6 +171,8 @@ map2json_tree_t* map2json_createTree(map2json_t *obj) {
 
 
 char *map2json_createJsonString(char *buffer, map2json_tree_t *tree) {
+	// TODO: savety on buffer overflow
+
     char *pos = buffer;
 	unsigned long length;
 
@@ -243,6 +251,8 @@ char *map2json_createJsonString(char *buffer, map2json_tree_t *tree) {
 
 
 char *map2json_create(map2json_t *obj) {
+	// TODO: Buffer size configurable
+
     obj->buffer = (char *) calloc(sizeof(char), 8192);
     obj->tree = map2json_createTree(obj);
 	map2json_createJsonString(obj->buffer, obj->tree);
