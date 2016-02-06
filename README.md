@@ -1,5 +1,6 @@
-# Jsontable
-Transforming JSON into a key/value pair for easier access and processing in C.
+# Json2Map
+
+Transforming JSON into a key/value map for easier access and processing in C.
 
 Starting with a JSON object, looking like:
 
@@ -44,5 +45,6 @@ test.true = true
 test.false = false
 ```
 
-All keys and value are stored as strings. To check for primitives it might be easiest to check for digits and the values "null", "true" and "false". The representation of the key/value pair can be changed easily as a *hook method* has to be defined and registered. So your key/value pair representation can be used quite easily.  
-For more information consult example.c
+It also works the other way arround. So your key/value map can be transformed to proper JSON again.
+All keys and value are stored as strings. To check for primitives it might be easiest to check for digits and the values "null", "true" and "false". The representation of the key/value map can be changed easily as a *hook method* has to be defined and registered. So your key/value map representation can be used quite easily.  
+For more details consult example.c
