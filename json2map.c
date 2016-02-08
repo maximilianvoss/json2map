@@ -1,9 +1,10 @@
 #include "json2map.h"
 
 
-// TODO: make thread save
-static void (* json2map_hookMethod) (void *data, char *key, char *value);
-static void *json2map_hookMethodData;
+json2map_t *json2map_init() {
+	json2map_t *obj = (json2map_t *) malloc (sizeof(json2map_t));
+	return obj;
+}
 
 
 void json2map_setTokenValue(char *jsonString, jsmntok_t *token, char *buffer) {
@@ -69,7 +70,7 @@ int json2map_calcEnd(jsmntok_t *token, int start, int end) {
 }
 
 
-int json2map_parseArray(char *path, char *jsonString, jsmntok_t *token, int start, int end) {
+int json2map_parseArray(json2map_t *obj, char *path, char *jsonString, jsmntok_t *token, int start, int end) {
 	int newEnd;
 	char buffer[STRING_STD_LENGTH];
 	char *pathBuff;
@@ -84,13 +85,13 @@ int json2map_parseArray(char *path, char *jsonString, jsmntok_t *token, int star
 		switch ( token[i].type ) {
 			case JSMN_OBJECT:
 				newEnd = json2map_calcEnd(token, i, end);
-				i = json2map_parseObject(pathBuff, jsonString, token, i + 1, newEnd + 1);
+				i = json2map_parseObject(obj, pathBuff, jsonString, token, i + 1, newEnd + 1);
 				break;
 			case JSMN_STRING:
 			case JSMN_PRIMITIVE:
 				memset(buffer, '\0', STRING_STD_LENGTH);
 				json2map_setTokenValue(jsonString, &token[i], buffer);	
-				json2map_hookMethod(json2map_hookMethodData, pathBuff, buffer);
+				obj->hookMethod(obj->hookMethodData, pathBuff, buffer);
 				memset(buffer, '\0', STRING_STD_LENGTH);
 				i++;
 				break;
@@ -109,7 +110,7 @@ int json2map_parseArray(char *path, char *jsonString, jsmntok_t *token, int star
 }
 
 
-int json2map_parseObject(char *path, char *jsonString, jsmntok_t *token, int start, int end) {
+int json2map_parseObject(json2map_t *obj, char *path, char *jsonString, jsmntok_t *token, int start, int end) {
 	int newEnd;
 	char buffer[STRING_STD_LENGTH];
 	char *pathBuff = NULL;
@@ -132,19 +133,19 @@ int json2map_parseObject(char *path, char *jsonString, jsmntok_t *token, int sta
 		switch ( token[i].type ) {
 			case JSMN_OBJECT:
 				newEnd = json2map_calcEnd(token, i, end);
-				i = json2map_parseObject(pathBuff, jsonString, token, i + 1, newEnd + 1);
+				i = json2map_parseObject(obj, pathBuff, jsonString, token, i + 1, newEnd + 1);
 				break;
 			case JSMN_STRING:
 			case JSMN_PRIMITIVE:
 				memset(buffer, '\0', STRING_STD_LENGTH);
 				json2map_setTokenValue(jsonString, &token[i], buffer);	
-				json2map_hookMethod(json2map_hookMethodData, pathBuff, buffer);
+				obj->hookMethod(obj->hookMethodData, pathBuff, buffer);
 				memset(buffer, '\0', STRING_STD_LENGTH);
 				i++;
 				break;
 			case JSMN_ARRAY:
 				newEnd = json2map_calcEnd(token, i, end);
-				i = json2map_parseArray(pathBuff, jsonString, token, i + 1, newEnd + 1);
+				i = json2map_parseArray(obj, pathBuff, jsonString, token, i + 1, newEnd + 1);
 				break;
 			default:
 				printf("ERROR: Not defined type\n");
@@ -160,7 +161,7 @@ int json2map_parseObject(char *path, char *jsonString, jsmntok_t *token, int sta
 }
 
 
-int json2map_parse(char *jsonString) {
+int json2map_parse(json2map_t *obj, char *jsonString) {
 	jsmn_parser p;
 	jsmntok_t token[JSON_MAX_TOKENS];
 
@@ -177,13 +178,12 @@ int json2map_parse(char *jsonString) {
 		return -1;
 	}
 
-	return json2map_parseObject(NULL, jsonString, token, 1, count);
+	return json2map_parseObject(obj, NULL, jsonString, token, 1, count);
 }
 
 
-void json2map_registerHook( void *data, void* method ) {
-	//TODO: Thread safety
-	json2map_hookMethod = method;
-	json2map_hookMethodData = data;
+void json2map_registerHook(json2map_t *obj, void *data, void* method ) {
+	obj->hookMethod = method;
+	obj->hookMethodData = data;
 }
 
