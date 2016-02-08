@@ -34,11 +34,12 @@
 
 void hookMethod(void *data, char *key, char *value) {
 	int i;
+
 	map2json_keyvalue_t* map = (map2json_keyvalue_t *) data;
 	for ( i = 0; i < 12; i++ ) {
 		if ( map[i].key == NULL ) {
-			map[i].key = (char *) malloc (sizeof(char) * ( strlen(key) + 1));
-			map[i].value = (char *) malloc (sizeof(char) * ( strlen(value) + 1));
+			map[i].key = (char *) calloc (sizeof(char), strlen(key) + 1);
+			map[i].value = (char *) calloc (sizeof(char), strlen(value) + 1);
 			memcpy(map[i].key, key, strlen(key));
 			memcpy(map[i].value, value, strlen(value));
 			printf("%d: %s = %s\n", i, map[i].key, map[i].value);
