@@ -1,11 +1,13 @@
 #include "map2json.h"
 
+#define BUFFER_LENGTH 1<<13
+#define MAX_MAP_KEY_DEPTH 1<<6
 
 map2json_t* map2json_init() {
 	map2json_t *obj;
 
 	obj = (map2json_t *) malloc (sizeof(map2json_t));
-    obj->buffer = (char *) calloc(sizeof(char), 8192);
+    obj->buffer = (char *) calloc(sizeof(char), BUFFER_LENGTH);
 
 	return obj;
 }
@@ -74,7 +76,7 @@ map2json_tree_t* map2json_createEmptyTreeObject(char *key) {
 
 
 long map2json_getArrayId(char *key) {
-    char buffer[1<<8];
+    char buffer[BUFFER_LENGTH];
 
     if ( key == NULL ) {
         return -1;
@@ -106,23 +108,21 @@ void map2json_storeValues(map2json_tree_t *obj, char *value) {
 
 
 map2json_tree_t* map2json_createTree(map2json_t *obj) {
-	// TODO: buffer size should be adquat or configurable
-	// TODO: nameTokens should be configurable
 	// TOOO: re-org code nicely, specially the ARRAY case
 
 	map2json_tree_t *treeRoot;
 	map2json_tree_t *treeObj;
 	map2json_tree_t *treeChild;
 	map2json_keyvalue_t *pair;
-	stringlib_tokens_t nameTokens[64];
-	char buffer[128];
+	stringlib_tokens_t nameTokens[MAX_MAP_KEY_DEPTH];
+	char buffer[BUFFER_LENGTH];
 	int i;
 
 	treeRoot = map2json_createEmptyTreeObject(NULL);
 
 	pair = obj->pairs;
 	while(pair != NULL) {
-		int count = stringlib_splitTokens(nameTokens, pair->key, '.', 64);
+		int count = stringlib_splitTokens(nameTokens, pair->key, '.', MAX_MAP_KEY_DEPTH);
 		treeObj = treeRoot;
 
 		for ( i = 0; i < count; i++ ) {
@@ -258,15 +258,12 @@ char *map2json_create(map2json_t *obj) {
 
 
 void map2json_freeTreeMemory(map2json_tree_t *obj) {
-    
     if ( obj == NULL ) {
         return;
     }
-    
     map2json_freeTreeMemory(obj->arrayObjects);
     map2json_freeTreeMemory(obj->children);
     map2json_freeTreeMemory(obj->next);
-    
     if ( obj->key != NULL ) {
         free(obj->key);
     }
