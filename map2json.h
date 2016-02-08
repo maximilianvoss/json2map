@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include "stringlib.h"
 #include "jsmn.h"
-#include "config.h"
 
 typedef struct {
 	char *key;

@@ -1,6 +1,10 @@
 #include "json2map.h"
 
 
+#define BUFFER_LENGTH 1<<10
+#define MAX_JSON_TOKENS 1<<8
+
+
 json2map_t *json2map_init() {
 	json2map_t *obj = (json2map_t *) malloc (sizeof(json2map_t));
 	return obj;
@@ -67,7 +71,7 @@ int json2map_calcEnd(jsmntok_t *token, int start, int end) {
 
 int json2map_parseArray(json2map_t *obj, char *path, char *jsonString, jsmntok_t *token, int start, int end) {
 	int newEnd;
-	char buffer[STRING_STD_LENGTH];
+	char buffer[BUFFER_LENGTH];
 	char *pathBuff;
 	int count = 0;
 
@@ -84,10 +88,10 @@ int json2map_parseArray(json2map_t *obj, char *path, char *jsonString, jsmntok_t
 				break;
 			case JSMN_STRING:
 			case JSMN_PRIMITIVE:
-				memset(buffer, '\0', STRING_STD_LENGTH);
+				memset(buffer, '\0', BUFFER_LENGTH);
 				json2map_setTokenValue(jsonString, &token[i], buffer);	
 				obj->hookMethod(obj->hookMethodData, pathBuff, buffer);
-				memset(buffer, '\0', STRING_STD_LENGTH);
+				memset(buffer, '\0', BUFFER_LENGTH);
 				i++;
 				break;
 			default:
@@ -107,18 +111,18 @@ int json2map_parseArray(json2map_t *obj, char *path, char *jsonString, jsmntok_t
 
 int json2map_parseObject(json2map_t *obj, char *path, char *jsonString, jsmntok_t *token, int start, int end) {
 	int newEnd;
-	char buffer[STRING_STD_LENGTH];
+	char buffer[BUFFER_LENGTH];
 	char *pathBuff = NULL;
 
 	int i = start;
 	while ( i < end && i > 0) {
 		if ( token[i].type == JSMN_STRING ) {
-			memset(buffer, '\0', STRING_STD_LENGTH);
+			memset(buffer, '\0', BUFFER_LENGTH);
 			json2map_setTokenValue(jsonString, &token[i], buffer);	
 
 			pathBuff = json2map_concatPaths(path, buffer, -1);
 
-			memset(buffer, '\0', STRING_STD_LENGTH);
+			memset(buffer, '\0', BUFFER_LENGTH);
 		} else {
 			printf("ERROR: Name of object has to be a string\n");
 			return -1;
@@ -132,10 +136,10 @@ int json2map_parseObject(json2map_t *obj, char *path, char *jsonString, jsmntok_
 				break;
 			case JSMN_STRING:
 			case JSMN_PRIMITIVE:
-				memset(buffer, '\0', STRING_STD_LENGTH);
+				memset(buffer, '\0', BUFFER_LENGTH);
 				json2map_setTokenValue(jsonString, &token[i], buffer);	
 				obj->hookMethod(obj->hookMethodData, pathBuff, buffer);
-				memset(buffer, '\0', STRING_STD_LENGTH);
+				memset(buffer, '\0', BUFFER_LENGTH);
 				i++;
 				break;
 			case JSMN_ARRAY:
@@ -158,11 +162,11 @@ int json2map_parseObject(json2map_t *obj, char *path, char *jsonString, jsmntok_
 
 int json2map_parse(json2map_t *obj, char *jsonString) {
 	jsmn_parser p;
-	jsmntok_t token[JSON_MAX_TOKENS];
+	jsmntok_t token[MAX_JSON_TOKENS];
 
 	jsmn_init(&p);
 
-	int count = jsmn_parse(&p, jsonString, strlen(jsonString), token, JSON_MAX_TOKENS);
+	int count = jsmn_parse(&p, jsonString, strlen(jsonString), token, MAX_JSON_TOKENS);
 	if ( count < 0 ) {
 		printf("ERROR: no object found\n");
 		return -1;

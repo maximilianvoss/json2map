@@ -5,7 +5,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include "jsmn.h"
-#include "config.h"
 
 typedef struct {
 	void (* hookMethod) (void *data, char *key, char *value);
