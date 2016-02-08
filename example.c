@@ -82,6 +82,13 @@ int main(int argc, char **argv) {
 
 	map2json_destroy(map2jsonObj);
 
+	int i;
+	for ( i = 0; i < 12; i++ ) {
+		free(map[i].key);
+		free(map[i].value);
+	}
+	free(map);
+
 	return 0;
 }
 
