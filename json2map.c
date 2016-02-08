@@ -10,6 +10,10 @@ json2map_t *json2map_init() {
 	return obj;
 }
 
+void json2map_destroy(json2map_t *obj) {
+	free (obj);
+}
+
 
 void json2map_setTokenValue(char *jsonString, jsmntok_t *token, char *buffer) {
 	memcpy(buffer, jsonString + token->start, token->end - token->start);

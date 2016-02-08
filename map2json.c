@@ -1,34 +1,30 @@
 #include "map2json.h"
 
 
-map2json_t* map2json_init(int count) {
-	// TODO: pairs should be a linked list
-	// TODO: init all variables in here
+map2json_t* map2json_init() {
 	map2json_t *obj;
 
 	obj = (map2json_t *) malloc (sizeof(map2json_t));
-	obj->pairs = (map2json_keyvalue_t *) calloc (sizeof(map2json_keyvalue_t), count);
-	obj->count = count;
-	obj->pos = 0;
+    obj->buffer = (char *) calloc(sizeof(char), 8192);
 
 	return obj;
 }
 
 
 void map2json_push(map2json_t *obj, char* key, char* value) {
+	map2json_keyvalue_t *pair = (map2json_keyvalue_t *) malloc (sizeof(map2json_keyvalue_t));
 
-	if ( obj->pos < obj->count) {
-		unsigned long keyLen = strlen(key);
-		unsigned long valLen = strlen(value);
+	unsigned long keyLen = strlen(key);
+	unsigned long valLen = strlen(value);
 
-		obj->pairs[obj->pos].key = (char *) calloc (sizeof(char), keyLen + 1);
-		obj->pairs[obj->pos].value = (char *) calloc (sizeof(char), valLen + 1);
+	pair->key = (char *) calloc (sizeof(char), keyLen + 1);
+	pair->value = (char *) calloc (sizeof(char), valLen + 1);
 
-		memcpy(obj->pairs[obj->pos].key, key, keyLen);
-		memcpy(obj->pairs[obj->pos].value, value, valLen);
-
-		obj->pos++;
-	}
+	memcpy(pair->key, key, keyLen);
+	memcpy(pair->value, value, valLen);
+	
+	pair->next = obj->pairs;
+	obj->pairs = pair;
 }
 
 
@@ -117,19 +113,20 @@ map2json_tree_t* map2json_createTree(map2json_t *obj) {
 	map2json_tree_t *treeRoot;
 	map2json_tree_t *treeObj;
 	map2json_tree_t *treeChild;
+	map2json_keyvalue_t *pair;
 	stringlib_tokens_t nameTokens[64];
 	char buffer[128];
 	int i;
-	int j;
 
 	treeRoot = map2json_createEmptyTreeObject(NULL);
 
-	for ( i = 0; i < obj->count; i++ ) {
-		int count = stringlib_splitTokens(nameTokens, obj->pairs[i].key, '.', 64);
+	pair = obj->pairs;
+	while(pair != NULL) {
+		int count = stringlib_splitTokens(nameTokens, pair->key, '.', 64);
 		treeObj = treeRoot;
 
-		for ( j = 0; j < count; j++ ) {
-			stringlib_getToken(&nameTokens[j], obj->pairs[i].key, buffer);
+		for ( i = 0; i < count; i++ ) {
+			stringlib_getToken(&nameTokens[i], pair->key, buffer);
             
             long arrayId = -1;
             long pos = map2json_checkArrayObject(buffer);
@@ -164,7 +161,8 @@ map2json_tree_t* map2json_createTree(map2json_t *obj) {
                 treeObj = treeChild;
             }
 		}
-		map2json_storeValues(treeObj, obj->pairs[i].value);
+		map2json_storeValues(treeObj, pair->value);
+		pair = pair->next;
 	}
 	return treeRoot;
 }
@@ -253,7 +251,6 @@ char *map2json_createJsonString(char *buffer, map2json_tree_t *tree) {
 char *map2json_create(map2json_t *obj) {
 	// TODO: Buffer size configurable
 
-    obj->buffer = (char *) calloc(sizeof(char), 8192);
     obj->tree = map2json_createTree(obj);
 	map2json_createJsonString(obj->buffer, obj->tree);
 	return obj->buffer;
@@ -277,13 +274,19 @@ void map2json_freeTreeMemory(map2json_tree_t *obj) {
 }
 
 
-void map2json_destroy(map2json_t *obj) {
-	int i;
-	for ( i = 0; i < obj->count; i++ ) {
-		free(obj->pairs[i].key);
-		free(obj->pairs[i].value);
+void map2json_freePairsMemory(map2json_keyvalue_t *pair) {
+	if ( pair == NULL ) {
+		return;
 	}
-	free(obj->pairs);
+	map2json_freePairsMemory(pair->next);
+	free (pair->key);
+	free (pair->value);
+	free (pair);
+}
+
+
+void map2json_destroy(map2json_t *obj) {
+	map2json_freePairsMemory (obj->pairs);
 	free(obj);
     free(obj->buffer);
     map2json_freeTreeMemory(obj->tree);

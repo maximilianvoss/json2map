@@ -58,10 +58,11 @@ int main(int argc, char **argv) {
 	json2map_t* json2mapObj = json2map_init();
 	json2map_registerHook(json2mapObj, map, &hookMethod);
 	json2map_parse(json2mapObj, JSON_EXAMPLE);
+	json2map_destroy(json2mapObj);
     
     printf("\n\n");
 
-	map2json_t *map2jsonObj = map2json_init(12);
+	map2json_t *map2jsonObj = map2json_init();
 	map2json_push(map2jsonObj, "test.name", "picture");
 	map2json_push(map2jsonObj, "test.file", "/var/www/html/pictureIn.png");
     map2json_push(map2jsonObj, "test._id.$oid", "566950d1afc4a3c1d86fcdfb");
