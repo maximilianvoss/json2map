@@ -2,6 +2,10 @@
 #include "map2json.h"
 #include "stdio.h"
 
+#ifdef DEBUG
+	#include "test.h"
+#endif
+
 
 #define JSON_EXAMPLE "\
 {\
@@ -29,13 +33,29 @@
 
 
 void hookMethod(void *data, char *key, char *value) {
-	printf("%s = %s\n", key, value);
+	int i;
+	map2json_keyvalue_t* map = (map2json_keyvalue_t *) data;
+	for ( i = 0; i < 12; i++ ) {
+		if ( map[i].key == NULL ) {
+			map[i].key = (char *) malloc (sizeof(char) * ( strlen(key) + 1));
+			map[i].value = (char *) malloc (sizeof(char) * ( strlen(value) + 1));
+			memcpy(map[i].key, key, strlen(key));
+			memcpy(map[i].value, value, strlen(value));
+			printf("%d: %s = %s\n", i, map[i].key, map[i].value);
+			return;
+		}
+	}
 }
+
+
 
 int main(int argc, char **argv) {
 
+	map2json_keyvalue_t *map;
+	map = (map2json_keyvalue_t *) calloc (sizeof(map2json_keyvalue_t), 12);
+
 	json2map_t* json2mapObj = json2map_init();
-	json2map_registerHook(json2mapObj, NULL, &hookMethod);
+	json2map_registerHook(json2mapObj, map, &hookMethod);
 	json2map_parse(json2mapObj, JSON_EXAMPLE);
     
     printf("\n\n");
@@ -55,6 +75,11 @@ int main(int argc, char **argv) {
 	map2json_push(map2jsonObj, "test.false", "false");
 
 	printf("%s\n", map2json_create(map2jsonObj));
+
+	#ifdef DEBUG
+		testValues(map, map2jsonObj->buffer);
+	#endif 
+
 	map2json_destroy(map2jsonObj);
 
 	return 0;
