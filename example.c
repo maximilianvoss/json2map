@@ -69,7 +69,7 @@ int main(int argc, char **argv) {
 	map2json_push(map2jsonObj, "test.array[1]", "b");
 	map2json_push(map2jsonObj, "test.array[2]", "3");
 	map2json_push(map2jsonObj, "test.array[3]", "d");
-	map2json_push(map2jsonObj, "test.array[4].map2jsonObject", "test");
+	map2json_push(map2jsonObj, "test.array[4].object", "test");
 	map2json_push(map2jsonObj, "test.nullpointer", "null");
 	map2json_push(map2jsonObj, "test.number", "1234");
 	map2json_push(map2jsonObj, "test.true", "true");

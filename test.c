@@ -61,7 +61,7 @@ void testValues(map2json_keyvalue_t *map, char *jsonString) {
 	errorCount += assertValue("false", map[11].value);
 	//assertValue()
 
-	errorCount += assertValue("{ \"test\" : { \"false\" : false, \"true\" : true, \"number\" : 1234, \"nullpointer\" : null, \"array\" : [ 1, \"b\", 3, \"d\", { \"map2jsonObject\" : \"test\" } ], \"_id\" : { \"$oid\" : \"566950d1afc4a3c1d86fcdfb\" }, \"file\" : \"/var/www/html/pictureIn.png\", \"name\" : \"picture\" } }", jsonString);
+	errorCount += assertValue("{ \"test\" : { \"false\" : false, \"true\" : true, \"number\" : 1234, \"nullpointer\" : null, \"array\" : [ 1, \"b\", 3, \"d\", { \"object\" : \"test\" } ], \"_id\" : { \"$oid\" : \"566950d1afc4a3c1d86fcdfb\" }, \"file\" : \"/var/www/html/pictureIn.png\", \"name\" : \"picture\" } }", jsonString);
 }
 
 #endif
