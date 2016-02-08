@@ -13,47 +13,42 @@ void json2map_setTokenValue(char *jsonString, jsmntok_t *token, char *buffer) {
 
 
 char *json2map_concatPaths(char *parent, char *key, int arrayIdx) {
-	// TODO: organize code a little nicer
 	char *path;
 	char arrayIdxBuff[10];
-	int arrayIdLen = 0;
 
-	long keyLen = strlen(key);
+	long arrayIdLen = 0;
+	long keyLen = 0;
+	long parentLen = 0;
+	long addition = -1;
+
+	if ( key != NULL ) {
+		keyLen = strlen(key);
+		addition++;
+	}
+
+	if ( parent != NULL ) {
+		parentLen = strlen(parent);
+		addition++;
+	}
 
 	if ( arrayIdx >= 0 ) {
 		sprintf(arrayIdxBuff, "[%d]", arrayIdx);
 		arrayIdLen += strlen(arrayIdxBuff);
 	}
-
-	if ( parent == NULL ) {
-		path = (char *) calloc(sizeof(char), keyLen + arrayIdLen + 1);
-		memcpy(path, key, keyLen);
-
-		if ( arrayIdx >= 0 ) {
-			memcpy(path + keyLen, arrayIdxBuff, arrayIdLen);
-		}
-        return path;
-	}
-    if ( key == NULL ) {
-		long parentLen = strlen(parent);
-		path = (char *) calloc(sizeof(char), parentLen + arrayIdLen + 1);
-		memcpy(path, parent, parentLen);
-
-		if ( arrayIdx >= 0 ) {
-			memcpy(path + parentLen, arrayIdxBuff, arrayIdLen);
-		}
-        return path;
-	}
-    
-    long parentLen = strlen(parent);
-    path = (char *) calloc(sizeof(char), parentLen + keyLen + arrayIdLen + 2);
+	
+    path = (char *) calloc(sizeof(char), parentLen + keyLen + arrayIdLen + addition + 1);
     memcpy(path, parent, parentLen);
-    path[parentLen] = '.';
-    memcpy(path + parentLen + 1, key, keyLen);
+
+    if ( parentLen && keyLen ) {
+    	path[parentLen] = '.';
+	}
+
+    memcpy(path + parentLen + addition, key, keyLen);
 
     if ( arrayIdx >= 0 ) {
-        memcpy(path + parentLen + keyLen + 1, arrayIdxBuff, arrayIdLen);
+        memcpy(path + parentLen + keyLen + addition, arrayIdxBuff, arrayIdLen);
     }
+
 	return path;
 }
 
