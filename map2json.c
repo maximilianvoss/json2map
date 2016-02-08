@@ -186,22 +186,22 @@ char *map2json_createJsonString(char *buffer, map2json_tree_t *tree) {
 		pos += length;
         *pos ='\"';
         pos++;
-		memcpy(pos, " : ", 3);
-		pos += 3;
+        *pos = ':';
+        pos++;
 	}
 
 	if ( tree->type == JSMN_OBJECT ) {
-		memcpy(pos, "{ ", 2);
-		pos+= 2;
+		*pos = '{';
+		pos++;
 		pos = map2json_createJsonString(pos, tree->children);
-		memcpy(pos, " }", 2);
-		pos += 2;
+		*pos = '}';
+		pos++;
 	}
     
     if ( tree->type == JSMN_ARRAY ) {
         int i;
-        memcpy(pos, "[ ", 2);
-        pos += 2;
+        *pos = '[';
+		pos++;
         
         for ( i = 0; i < tree->maxArrayId + 1; i++ ) {
             map2json_tree_t *arrayObj = tree->arrayObjects;
@@ -210,8 +210,8 @@ char *map2json_createJsonString(char *buffer, map2json_tree_t *tree) {
                     pos = map2json_createJsonString(pos, arrayObj);
                     
                     if ( i < tree->maxArrayId ) {
-                        memcpy(pos, ", ", 2);
-                        pos += 2;
+                    	*pos = ',';
+						pos++;
                     }
                     
                     break;
@@ -220,8 +220,8 @@ char *map2json_createJsonString(char *buffer, map2json_tree_t *tree) {
             }
 
         }
-        memcpy(pos, " ]", 2);
-        pos += 2;
+		*pos = ']';
+		pos++;
     }
     
 	if ( tree->type == JSMN_PRIMITIVE || tree->type == JSMN_STRING ) {
@@ -239,8 +239,8 @@ char *map2json_createJsonString(char *buffer, map2json_tree_t *tree) {
 	}
 
 	if ( tree->next != NULL ) {
-		memcpy(pos, ", ", 2);
-		pos += 2;
+		*pos = ',';
+		pos++;
 		pos = map2json_createJsonString(pos, tree->next);
 	}
 
@@ -249,8 +249,6 @@ char *map2json_createJsonString(char *buffer, map2json_tree_t *tree) {
 
 
 char *map2json_create(map2json_t *obj) {
-	// TODO: Buffer size configurable
-
     obj->tree = map2json_createTree(obj);
 	map2json_createJsonString(obj->buffer, obj->tree);
 	return obj->buffer;
