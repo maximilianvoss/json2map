@@ -168,6 +168,12 @@ map2json_tree_t* map2json_createTree(map2json_t *obj) {
 }
 
 
+char *map2json_addChar(char *str, char chr) {
+	*str = chr;
+	str++;
+	return str;
+}
+
 char *map2json_createJsonString(char *buffer, map2json_tree_t *tree) {
 	// TODO: savety on buffer overflow
 
@@ -179,29 +185,23 @@ char *map2json_createJsonString(char *buffer, map2json_tree_t *tree) {
 	}
 
 	if ( tree->key != NULL ) {
-        *pos ='\"';
-        pos++;
+		pos = map2json_addChar(pos, '\"');
 		length = strlen(tree->key);
 		memcpy(pos, tree->key, length);
 		pos += length;
-        *pos ='\"';
-        pos++;
-        *pos = ':';
-        pos++;
+		pos = map2json_addChar(pos, '\"');
+		pos = map2json_addChar(pos, ':');
 	}
 
 	if ( tree->type == JSMN_OBJECT ) {
-		*pos = '{';
-		pos++;
+		pos = map2json_addChar(pos, '{');
 		pos = map2json_createJsonString(pos, tree->children);
-		*pos = '}';
-		pos++;
+		pos = map2json_addChar(pos, '}');
 	}
     
     if ( tree->type == JSMN_ARRAY ) {
         int i;
-        *pos = '[';
-		pos++;
+		pos = map2json_addChar(pos, '[');
         
         for ( i = 0; i < tree->maxArrayId + 1; i++ ) {
             map2json_tree_t *arrayObj = tree->arrayObjects;
@@ -210,8 +210,7 @@ char *map2json_createJsonString(char *buffer, map2json_tree_t *tree) {
                     pos = map2json_createJsonString(pos, arrayObj);
                     
                     if ( i < tree->maxArrayId ) {
-                    	*pos = ',';
-						pos++;
+                    	pos = map2json_addChar(pos, ',');
                     }
                     
                     break;
@@ -220,27 +219,23 @@ char *map2json_createJsonString(char *buffer, map2json_tree_t *tree) {
             }
 
         }
-		*pos = ']';
-		pos++;
+        pos = map2json_addChar(pos, ']');
     }
     
 	if ( tree->type == JSMN_PRIMITIVE || tree->type == JSMN_STRING ) {
         if ( tree->type == JSMN_STRING ) {
-            *pos ='\"';
-            pos++;
+        	pos = map2json_addChar(pos, '\"');
         }
 		length = strlen(tree->value);
 		memcpy(pos, tree->value, length);
 		pos += length;
         if ( tree->type == JSMN_STRING ) {
-            *pos ='\"';
-            pos++;
+        	pos = map2json_addChar(pos, '\"');
         }
 	}
 
 	if ( tree->next != NULL ) {
-		*pos = ',';
-		pos++;
+		pos = map2json_addChar(pos, ',');
 		pos = map2json_createJsonString(pos, tree->next);
 	}
 
