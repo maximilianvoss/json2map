@@ -1,5 +1,5 @@
 # C Compiler
-CC=llvm-gcc
+CC=gcc
 CFLAGS=-Wall -ggdb -g -O2 -fstack-protector-strong -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -DLINUX -D_REENTRANT -D_GNU_SOURCE -pthread -DDEBUG -c
 
 # Sources
