@@ -33,5 +33,6 @@ map2json_t* map2json_init();
 void map2json_push(map2json_t *obj, char* key, char* value);
 char *map2json_create(map2json_t *obj);
 void map2json_destroy(map2json_t *obj);
+char *map2json_createJsonString(char *buffer, map2json_tree_t *tree);
 
 #endif

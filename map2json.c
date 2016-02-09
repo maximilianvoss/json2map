@@ -174,9 +174,31 @@ char *map2json_addChar(char *str, char chr) {
 	return str;
 }
 
-char *map2json_createJsonString(char *buffer, map2json_tree_t *tree) {
-	// TODO: savety on buffer overflow
+char *map2json_createJsonStringArray(char *buffer, map2json_tree_t *tree) {
+    int i;
+	char *pos = buffer;
+	pos = map2json_addChar(pos, '[');
+    
+    for ( i = 0; i < tree->maxArrayId + 1; i++ ) {
+        map2json_tree_t *arrayObj = tree->arrayObjects;
+        while ( arrayObj != NULL ) {
+            if ( arrayObj->arrayId == i ) {
+                pos = map2json_createJsonString(pos, arrayObj);
+                
+                if ( i < tree->maxArrayId ) {
+                	pos = map2json_addChar(pos, ',');
+                }
+                
+                break;
+            }
+            arrayObj = arrayObj->arrayObjects;
+        }
+    }
+    pos = map2json_addChar(pos, ']');
+    return pos;
+}
 
+char *map2json_createJsonString(char *buffer, map2json_tree_t *tree) {
     char *pos = buffer;
 	unsigned long length;
 
@@ -200,26 +222,7 @@ char *map2json_createJsonString(char *buffer, map2json_tree_t *tree) {
 	}
     
     if ( tree->type == JSMN_ARRAY ) {
-        int i;
-		pos = map2json_addChar(pos, '[');
-        
-        for ( i = 0; i < tree->maxArrayId + 1; i++ ) {
-            map2json_tree_t *arrayObj = tree->arrayObjects;
-            while ( arrayObj != NULL ) {
-                if ( arrayObj->arrayId == i ) {
-                    pos = map2json_createJsonString(pos, arrayObj);
-                    
-                    if ( i < tree->maxArrayId ) {
-                    	pos = map2json_addChar(pos, ',');
-                    }
-                    
-                    break;
-                }
-                arrayObj = arrayObj->arrayObjects;
-            }
-
-        }
-        pos = map2json_addChar(pos, ']');
+    	pos = map2json_createJsonStringArray(pos, tree);
     }
     
 	if ( tree->type == JSMN_PRIMITIVE || tree->type == JSMN_STRING ) {
