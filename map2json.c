@@ -8,7 +8,8 @@ map2json_t* map2json_init() {
 
 	obj = (map2json_t *) malloc (sizeof(map2json_t));
     obj->buffer = (char *) calloc(sizeof(char), BUFFER_LENGTH);
-
+    obj->pairs = NULL;
+    
 	return obj;
 }
 
