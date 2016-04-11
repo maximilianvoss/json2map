@@ -44,7 +44,7 @@ int stringlib_isInteger(char *str) {
     }
     
     while ( *ptr != '\0' ) {
-        if ( *ptr < 48 || *ptr > 57 ) {
+		if ( (*ptr < 48 || *ptr > 57) && *ptr != '.' ) {
             return 0;
         }
         ptr++;
