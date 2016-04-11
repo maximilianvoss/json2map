@@ -3,7 +3,7 @@
 
 void stringlib_getToken(stringlib_tokens_t *token, char *str, char *buffer) {
 	memcpy(buffer, str + token->start, token->length);
-	char *ptr = buffer + token->length ;
+	char *ptr = buffer + token->length;
 	*ptr = '\0';
 }
 

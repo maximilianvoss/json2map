@@ -17,11 +17,11 @@ map2json_t* map2json_init() {
 void map2json_push(map2json_t *obj, char* key, char* value) {
 	map2json_keyvalue_t *pair = (map2json_keyvalue_t *) malloc (sizeof(map2json_keyvalue_t));
 
-	unsigned long keyLen = strlen(key);
-	unsigned long valLen = strlen(value);
+	unsigned long keyLen = strlen(key) + 1;
+	unsigned long valLen = strlen(value) + 1;
 
-	pair->key = (char *) calloc (sizeof(char), keyLen + 1);
-	pair->value = (char *) calloc (sizeof(char), valLen + 1);
+	pair->key = (char *) calloc (sizeof(char), keyLen);
+	pair->value = (char *) calloc (sizeof(char), valLen);
 
 	memcpy(pair->key, key, keyLen);
 	memcpy(pair->value, value, valLen);
@@ -69,7 +69,7 @@ map2json_tree_t* map2json_createEmptyTreeObject(char *key) {
 	if ( key == NULL ) {
 		obj->key = NULL;
 	} else {
-		obj->key = (char *) malloc (sizeof(char) * (strlen(key) + 1) );
+		obj->key = (char *) calloc (sizeof(char), strlen(key) + 1);
 		memcpy(obj->key, key, strlen(key));
 	}
 	return obj;
