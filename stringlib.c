@@ -18,8 +18,8 @@ int stringlib_splitTokens(stringlib_tokens_t *tokens, char *str, char chr, int m
 
 	while ( *newPos != '\0' ) {
 		if ( *newPos == chr ) {
-			tokens[count].start = (lastPos - str);
-			tokens[count].length = (newPos - lastPos);
+			tokens[count].start = ( lastPos - str );
+			tokens[count].length = ( newPos - lastPos );
 			lastPos = newPos + 1;
 			count++;
 			if ( count >= maxCount ) {
@@ -29,25 +29,25 @@ int stringlib_splitTokens(stringlib_tokens_t *tokens, char *str, char chr, int m
 		newPos++;
 	}
 	if ( newPos != str ) {
-		tokens[count].start = (lastPos - str);
-		tokens[count].length = (newPos - lastPos);
+		tokens[count].start = ( lastPos - str );
+		tokens[count].length = ( newPos - lastPos );
 		count++;
 	}
 	return count;
 }
 
 int stringlib_isInteger(char *str) {
-    char *ptr = str;
-    
-    if ( *ptr == '\0' ) {
-        return 0;
-    }
-    
-    while ( *ptr != '\0' ) {
-		if ( (*ptr < 48 || *ptr > 57) && *ptr != '.' ) {
-            return 0;
-        }
-        ptr++;
-    }
-    return 1;
+	char *ptr = str;
+
+	if ( *ptr == '\0' ) {
+		return 0;
+	}
+
+	while ( *ptr != '\0' ) {
+		if ( ( *ptr < 48 || *ptr > 57 ) && *ptr != '.' ) {
+			return 0;
+		}
+		ptr++;
+	}
+	return 1;
 }

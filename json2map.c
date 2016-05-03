@@ -6,12 +6,12 @@
 
 
 json2map_t *json2map_init() {
-	json2map_t *obj = (json2map_t *) malloc (sizeof(json2map_t));
+	json2map_t *obj = (json2map_t *) malloc(sizeof(json2map_t));
 	return obj;
 }
 
 void json2map_destroy(json2map_t *obj) {
-	free (obj);
+	free(obj);
 }
 
 
@@ -43,19 +43,19 @@ char *json2map_concatPaths(char *parent, char *key, int arrayIdx) {
 		sprintf(arrayIdxBuff, "[%d]", arrayIdx);
 		arrayIdLen += strlen(arrayIdxBuff);
 	}
-	
-    path = (char *) calloc(sizeof(char), parentLen + keyLen + arrayIdLen + addition + 1);
-    memcpy(path, parent, parentLen);
 
-    if ( parentLen && keyLen ) {
-    	path[parentLen] = '.';
+	path = (char *) calloc(sizeof(char), parentLen + keyLen + arrayIdLen + addition + 1);
+	memcpy(path, parent, parentLen);
+
+	if ( parentLen && keyLen ) {
+		path[parentLen] = '.';
 	}
 
-    memcpy(path + parentLen + addition, key, keyLen);
+	memcpy(path + parentLen + addition, key, keyLen);
 
-    if ( arrayIdx >= 0 ) {
-        memcpy(path + parentLen + keyLen + addition, arrayIdxBuff, arrayIdLen);
-    }
+	if ( arrayIdx >= 0 ) {
+		memcpy(path + parentLen + keyLen + addition, arrayIdxBuff, arrayIdLen);
+	}
 
 	return path;
 }
@@ -65,7 +65,7 @@ int json2map_calcEnd(jsmntok_t *token, int start, int end) {
 	// TODO: optimize search
 	int i;
 	for ( i = start + 1; i < end; i++ ) {
-		if ( token[i].start > token[start].end) {
+		if ( token[i].start > token[start].end ) {
 			return i - 1;
 		}
 	}
@@ -80,7 +80,7 @@ int json2map_parseArray(json2map_t *obj, char *path, char *jsonString, jsmntok_t
 	int count = 0;
 
 	int i = start;
-	while ( i < end && i > 0) {
+	while ( i < end && i > 0 ) {
 
 		pathBuff = json2map_concatPaths(NULL, path, count);
 		count++;
@@ -93,7 +93,7 @@ int json2map_parseArray(json2map_t *obj, char *path, char *jsonString, jsmntok_t
 			case JSMN_STRING:
 			case JSMN_PRIMITIVE:
 				memset(buffer, '\0', BUFFER_LENGTH);
-				json2map_setTokenValue(jsonString, &token[i], buffer);	
+				json2map_setTokenValue(jsonString, &token[i], buffer);
 				obj->hookMethod(obj->hookMethodData, pathBuff, buffer);
 				memset(buffer, '\0', BUFFER_LENGTH);
 				i++;
@@ -102,8 +102,8 @@ int json2map_parseArray(json2map_t *obj, char *path, char *jsonString, jsmntok_t
 				printf("ERROR: Not defined type\n");
 				return -1;
 		}
-        
-        free(pathBuff);
+
+		free(pathBuff);
 	}
 
 	if ( i < 0 ) {
@@ -119,10 +119,10 @@ int json2map_parseObject(json2map_t *obj, char *path, char *jsonString, jsmntok_
 	char *pathBuff = NULL;
 
 	int i = start;
-	while ( i < end && i > 0) {
+	while ( i < end && i > 0 ) {
 		if ( token[i].type == JSMN_STRING ) {
 			memset(buffer, '\0', BUFFER_LENGTH);
-			json2map_setTokenValue(jsonString, &token[i], buffer);	
+			json2map_setTokenValue(jsonString, &token[i], buffer);
 
 			pathBuff = json2map_concatPaths(path, buffer, -1);
 
@@ -141,7 +141,7 @@ int json2map_parseObject(json2map_t *obj, char *path, char *jsonString, jsmntok_
 			case JSMN_STRING:
 			case JSMN_PRIMITIVE:
 				memset(buffer, '\0', BUFFER_LENGTH);
-				json2map_setTokenValue(jsonString, &token[i], buffer);	
+				json2map_setTokenValue(jsonString, &token[i], buffer);
 				obj->hookMethod(obj->hookMethodData, pathBuff, buffer);
 				memset(buffer, '\0', BUFFER_LENGTH);
 				i++;
@@ -154,9 +154,9 @@ int json2map_parseObject(json2map_t *obj, char *path, char *jsonString, jsmntok_
 				printf("ERROR: Not defined type\n");
 				return -1;
 		}
-        free(pathBuff);
+		free(pathBuff);
 	}
-    
+
 	if ( i < 0 ) {
 		return i;
 	}
@@ -176,7 +176,7 @@ int json2map_parse(json2map_t *obj, char *jsonString) {
 		return -1;
 	}
 
-	if ( count < 1 || token[0].type != JSMN_OBJECT) {
+	if ( count < 1 || token[0].type != JSMN_OBJECT ) {
 		printf("ERROR: first found object needs to be a valid object\n");
 		return -1;
 	}
@@ -185,7 +185,7 @@ int json2map_parse(json2map_t *obj, char *jsonString) {
 }
 
 
-void json2map_registerHook(json2map_t *obj, void *data, void* method ) {
+void json2map_registerHook(json2map_t *obj, void *data, void *method) {
 	obj->hookMethod = method;
 	obj->hookMethodData = data;
 }
