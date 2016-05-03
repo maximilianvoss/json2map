@@ -4,17 +4,21 @@
 #define MAX_MAP_KEY_DEPTH 1<<6
 
 map2json_t *map2json_init() {
+	DEBUG_PUT("map2json_init()... ");
 	map2json_t *obj;
 
 	obj = (map2json_t *) malloc(sizeof(map2json_t));
 	obj->buffer = (char *) calloc(sizeof(char), BUFFER_LENGTH);
 	obj->pairs = NULL;
 
+	DEBUG_PUT("map2json_init()... DONE");
 	return obj;
 }
 
 
 void map2json_push(map2json_t *obj, char *key, char *value) {
+	DEBUG_TEXT("map2json_push([map2json_t *], %s, %s)... ", key, value);
+
 	map2json_keyvalue_t *pair = (map2json_keyvalue_t *) malloc(sizeof(map2json_keyvalue_t));
 
 	unsigned long keyLen = strlen(key) + 1;
@@ -28,33 +32,42 @@ void map2json_push(map2json_t *obj, char *key, char *value) {
 
 	pair->next = obj->pairs;
 	obj->pairs = pair;
+
+	DEBUG_TEXT("map2json_push([map2json_t *], %s, %s)... DONE", key, value);
 }
 
 
 long map2json_checkArrayObject(char *key) {
+	DEBUG_TEXT("map2json_checkArrayObject(%s)... ", key);
 	char *ptr = strchr(key, '[');
 	if ( ptr && strchr(key, ']') ) {
 		return ptr - key;
 	}
+	DEBUG_TEXT("map2json_checkArrayObject(%s)... ", key);
 	return 0;
 }
 
 
 map2json_tree_t *map2json_findTreeNode(map2json_tree_t *root, char *key) {
+	DEBUG_TEXT("map2json_findTreeNode([map2json_tree_t *], %s)... ", key);
 	map2json_tree_t *obj;
 
 	obj = root->children;
 	while ( obj != NULL ) {
 		if ( !strcmp(obj->key, key) ) {
+			DEBUG_TEXT("map2json_findTreeNode([map2json_tree_t *], %s): key found", key);
+			DEBUG_TEXT("map2json_findTreeNode([map2json_tree_t *], %s)... DONE", key);
 			return obj;
 		}
 		obj = obj->next;
 	}
+	DEBUG_TEXT("map2json_findTreeNode([map2json_tree_t *], %s)... DONE", key);
 	return NULL;
 }
 
 
 map2json_tree_t *map2json_createEmptyTreeObject(char *key) {
+	DEBUG_TEXT("map2json_createEmptyTreeObject(%s)... ", key);
 	map2json_tree_t *obj;
 
 	obj = (map2json_tree_t *) malloc(sizeof(map2json_tree_t));
@@ -72,11 +85,15 @@ map2json_tree_t *map2json_createEmptyTreeObject(char *key) {
 		obj->key = (char *) calloc(sizeof(char), strlen(key) + 1);
 		memcpy(obj->key, key, strlen(key));
 	}
+
+	DEBUG_TEXT("map2json_createEmptyTreeObject(%s)... DONE", key);
 	return obj;
 }
 
 
 long map2json_getArrayId(char *key) {
+	DEBUG_TEXT("map2json_getArrayId(%s)... ", key);
+
 	char buffer[BUFFER_LENGTH];
 
 	if ( key == NULL ) {
@@ -88,27 +105,36 @@ long map2json_getArrayId(char *key) {
 	memcpy(buffer, key, length);
 	buffer[length - 1] = '\0';
 
+	DEBUG_TEXT("map2json_getArrayId(%s)... DONE", key);
 	return atoi(buffer);
 }
 
 
 void map2json_storeValues(map2json_tree_t *obj, char *value) {
+	DEBUG_TEXT("map2json_storeValues([map2json_tree_t *], %s)... ", value);
 
 	if ( obj->type == JSMN_ARRAY ) {
+		DEBUG_TEXT("map2json_storeValues([map2json_tree_t *], %s): object is array", value);
+		DEBUG_TEXT("map2json_storeValues([map2json_tree_t *], %s)... DONE ", value);
 		return;
 	}
 
 	if ( stringlib_isInteger(value) || !strcmp(value, "null") || !strcmp(value, "true") || !strcmp(value, "false") ) {
+		DEBUG_TEXT("map2json_storeValues([map2json_tree_t *], %s): object is primitive", value);
 		obj->type = JSMN_PRIMITIVE;
 		obj->value = value;
 	} else {
+		DEBUG_TEXT("map2json_storeValues([map2json_tree_t *], %s): object is string", value);
 		obj->type = JSMN_STRING;
 		obj->value = value;
 	}
+
+	DEBUG_TEXT("map2json_storeValues([map2json_tree_t *], %s)... DONE", value);
 }
 
 
 map2json_tree_t *map2json_createTree(map2json_t *obj) {
+	DEBUG_PUT("map2json_createTree([map2json_t *])... ");
 	// TOOO: re-org code nicely, specially the ARRAY case
 
 	map2json_tree_t *treeRoot;
@@ -165,17 +191,23 @@ map2json_tree_t *map2json_createTree(map2json_t *obj) {
 		map2json_storeValues(treeObj, pair->value);
 		pair = pair->next;
 	}
+
+	DEBUG_PUT("map2json_createTree([map2json_t *])... DONE");
 	return treeRoot;
 }
 
 
 char *map2json_addChar(char *str, char chr) {
+	DEBUG_TEXT("map2json_addChar(%s, %c)... ", str, chr);
 	*str = chr;
 	str++;
+	DEBUG_TEXT("map2json_addChar(%s, %c)... DONE", str, chr);
 	return str;
 }
 
 char *map2json_createJsonStringArray(char *buffer, map2json_tree_t *tree) {
+	DEBUG_TEXT("map2json_createJsonStringArray(%s, [map2json_tree_t *])... ", buffer);
+
 	int i;
 	char *pos = buffer;
 	pos = map2json_addChar(pos, '[');
@@ -196,10 +228,14 @@ char *map2json_createJsonStringArray(char *buffer, map2json_tree_t *tree) {
 		}
 	}
 	pos = map2json_addChar(pos, ']');
+
+	DEBUG_TEXT("map2json_createJsonStringArray(%s, [map2json_tree_t *])... DONE", buffer);
 	return pos;
 }
 
 char *map2json_createJsonString(char *buffer, map2json_tree_t *tree) {
+	DEBUG_TEXT("map2json_createJsonString(%s, [map2json_tree_t *])... ", buffer);
+
 	char *pos = buffer;
 	unsigned long length;
 
@@ -243,18 +279,24 @@ char *map2json_createJsonString(char *buffer, map2json_tree_t *tree) {
 		pos = map2json_createJsonString(pos, tree->next);
 	}
 
+	DEBUG_TEXT("map2json_createJsonString(%s, [map2json_tree_t *])... DONE", buffer);
 	return pos;
 }
 
 
 char *map2json_create(map2json_t *obj) {
+	DEBUG_PUT("map2json_create([map2json_t *])... ");
 	obj->tree = map2json_createTree(obj);
 	map2json_createJsonString(obj->buffer, obj->tree);
+
+	DEBUG_PUT("map2json_create([map2json_t *])... ");
 	return obj->buffer;
 }
 
 
 void map2json_freeTreeMemory(map2json_tree_t *obj) {
+	DEBUG_PUT("map2json_freeTreeMemory([map2json_t *])... ");
+
 	if ( obj == NULL ) {
 		return;
 	}
@@ -265,10 +307,12 @@ void map2json_freeTreeMemory(map2json_tree_t *obj) {
 		free(obj->key);
 	}
 	free(obj);
+	DEBUG_PUT("map2json_freeTreeMemory([map2json_t *])... DONE");
 }
 
 
 void map2json_freePairsMemory(map2json_keyvalue_t *pair) {
+	DEBUG_PUT("map2json_freePairsMemory([map2json_t *])... ");
 	if ( pair == NULL ) {
 		return;
 	}
@@ -276,12 +320,15 @@ void map2json_freePairsMemory(map2json_keyvalue_t *pair) {
 	free(pair->key);
 	free(pair->value);
 	free(pair);
+	DEBUG_PUT("map2json_freePairsMemory([map2json_t *])... DONE");
 }
 
 
 void map2json_destroy(map2json_t *obj) {
+	DEBUG_PUT("map2json_destroy([map2json_t *])... ");
 	map2json_freePairsMemory(obj->pairs);
 	free(obj);
 	free(obj->buffer);
 	map2json_freeTreeMemory(obj->tree);
+	DEBUG_PUT("map2json_destroy([map2json_t *])... DONE");
 }
