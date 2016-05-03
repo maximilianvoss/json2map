@@ -327,8 +327,8 @@ void map2json_freePairsMemory(map2json_keyvalue_t *pair) {
 void map2json_destroy(map2json_t *obj) {
 	DEBUG_PUT("map2json_destroy([map2json_t *])... ");
 	map2json_freePairsMemory(obj->pairs);
-	free(obj);
-	free(obj->buffer);
 	map2json_freeTreeMemory(obj->tree);
+	free(obj->buffer);
+	free(obj);
 	DEBUG_PUT("map2json_destroy([map2json_t *])... DONE");
 }
