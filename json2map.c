@@ -61,7 +61,7 @@ char *json2map_concatPaths(char *parent, char *key, int arrayIdx) {
 	}
 
 	if ( arrayIdx >= 0 ) {
-		sprintf(arrayIdxBuff, "[%d]", arrayIdx);
+		sprintf(arrayIdxBuff, "%c%d%c", MAP_ARRAY_START, arrayIdx, MAP_ARRAY_END);
 		arrayIdLen += strlen(arrayIdxBuff);
 	}
 
@@ -69,7 +69,7 @@ char *json2map_concatPaths(char *parent, char *key, int arrayIdx) {
 	memcpy(path, parent, parentLen);
 
 	if ( parentLen && keyLen ) {
-		path[parentLen] = '.';
+		path[parentLen] = MAP_OBJECT_SEPARATOR;
 	}
 
 	memcpy(path + parentLen + addition, key, keyLen);
