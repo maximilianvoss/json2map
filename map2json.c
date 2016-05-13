@@ -1,5 +1,9 @@
 #include "map2json.h"
 #include "config.h"
+#include "debugging.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include "stringlib.h"
 
 
 long map2json_checkArrayObject(char *key);
