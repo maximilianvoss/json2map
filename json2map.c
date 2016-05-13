@@ -1,8 +1,22 @@
 #include "json2map.h"
+#include "config.h"
 
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include "jsmn.h"
+#include "debugging.h"
 
-#define BUFFER_LENGTH 1<<10
-#define MAX_JSON_TOKENS 1<<8
+void json2map_setTokenValue(char *jsonString, jsmntok_t *token, char *buffer);
+
+char *json2map_concatPaths(char *parent, char *key, int arrayIdx);
+
+int json2map_calcEnd(jsmntok_t *token, int start, int end);
+
+int json2map_parseArray(json2map_t *obj, char *path, char *jsonString, jsmntok_t *token, int start, int end);
+
+int json2map_parseObject(json2map_t *obj, char *path, char *jsonString, jsmntok_t *token, int start, int end);
+
 
 
 json2map_t *json2map_init() {

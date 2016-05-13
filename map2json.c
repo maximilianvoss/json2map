@@ -1,7 +1,28 @@
 #include "map2json.h"
+#include "config.h"
 
-#define BUFFER_LENGTH 1<<13
-#define MAX_MAP_KEY_DEPTH 1<<6
+
+long map2json_checkArrayObject(char *key);
+
+map2json_tree_t *map2json_findTreeNode(map2json_tree_t *root, char *key);
+
+map2json_tree_t *map2json_createEmptyTreeObject(char *key);
+
+long map2json_getArrayId(char *key);
+
+void map2json_storeValues(map2json_tree_t *obj, char *value);
+
+map2json_tree_t *map2json_createTree(map2json_t *obj);
+
+char *map2json_addChar(char *str, char chr);
+
+char *map2json_createJsonStringArray(char *buffer, map2json_tree_t *tree);
+
+void map2json_freeTreeMemory(map2json_tree_t *obj);
+
+void map2json_freePairsMemory(map2json_keyvalue_t *pair);
+
+void map2json_destroy(map2json_t *obj);
 
 map2json_t *map2json_init() {
 	DEBUG_PUT("map2json_init()... ");
@@ -205,6 +226,7 @@ char *map2json_addChar(char *str, char chr) {
 	return str;
 }
 
+
 char *map2json_createJsonStringArray(char *buffer, map2json_tree_t *tree) {
 	DEBUG_TEXT("map2json_createJsonStringArray(%s, [map2json_tree_t *])... ", buffer);
 
@@ -282,7 +304,6 @@ char *map2json_createJsonString(char *buffer, map2json_tree_t *tree) {
 	DEBUG_TEXT("map2json_createJsonString(%s, [map2json_tree_t *])... DONE", buffer);
 	return pos;
 }
-
 
 char *map2json_create(map2json_t *obj) {
 	DEBUG_PUT("map2json_create([map2json_t *])... ");
