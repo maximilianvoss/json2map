@@ -1,5 +1,5 @@
-#ifndef __DEBUGGING_H__
-#define __DEBUGGING_H__
+#ifndef __JSON2MAP_DEBUGGING_H__
+#define __JSON2MAP_DEBUGGING_H__
 
 #ifdef DEBUG
 #define DEBUG_TEXT(fmt, ...) printf(fmt, __VA_ARGS__); printf("\n")

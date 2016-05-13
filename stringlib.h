@@ -1,5 +1,5 @@
-#ifndef __STRINGLIB_H__
-#define __STRINGLIB_H__
+#ifndef __JSON2MAP_STRINGLIB_H__
+#define __JSON2MAP_STRINGLIB_H__
 
 #include "string.h"
 

@@ -1,5 +1,5 @@
-#ifndef __TEST_H__
-#define __TEST_H__
+#ifndef __JSON2MAP_TEST_H__
+#define __JSON2MAP_TEST_H__
 
 #ifdef DEBUG
 

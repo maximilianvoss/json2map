@@ -1,5 +1,5 @@
-#ifndef __MAP2JSON_H__
-#define __MAP2JSON_H__
+#ifndef __JSON2MAP_MAP2JSON_H__
+#define __JSON2MAP_MAP2JSON_H__
 
 #include <stdio.h>
 #include <stdlib.h>
