@@ -1,12 +1,7 @@
 #ifndef __JSON2MAP_MAP2JSON_H__
 #define __JSON2MAP_MAP2JSON_H__
 
-#include <stdio.h>
-#include <stdlib.h>
-#include "stringlib.h"
 #include "jsmn.h"
-#include "debugging.h"
-
 
 typedef struct s_map2json_keyvalue {
 	char *key;

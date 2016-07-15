@@ -158,10 +158,31 @@ void map2json_storeValues(map2json_tree_t *obj, char *value) {
 }
 
 
+map2json_tree_t *map2json_getArrayObject(map2json_tree_t *obj, long arrayId) {
+	map2json_tree_t *arrObj;
+
+	arrObj = obj->arrayObjects;
+	while ( arrObj != NULL ) {
+		if ( arrObj->arrayId == arrayId ) {
+			return arrObj;
+		}
+		arrObj = arrObj->next;
+
+	}
+	arrObj = map2json_createEmptyTreeObject(NULL);
+	if ( obj->maxArrayId < arrayId ) {
+		obj->maxArrayId = arrayId;
+	}
+	arrObj->arrayId = arrayId;
+	arrObj->next = obj->arrayObjects;
+	obj->arrayObjects = arrObj;
+
+	return arrObj;
+}
+
+
 map2json_tree_t *map2json_createTree(map2json_t *obj) {
 	DEBUG_PUT("map2json_createTree([map2json_t *])... ");
-	// TOOO: re-org code nicely, specially the ARRAY case
-
 	map2json_tree_t *treeRoot;
 	map2json_tree_t *treeObj;
 	map2json_tree_t *treeChild;
@@ -199,16 +220,7 @@ map2json_tree_t *map2json_createTree(map2json_t *obj) {
 			}
 
 			if ( pos ) {
-				map2json_tree_t *arrayObj = map2json_createEmptyTreeObject(NULL);
-				arrayObj->arrayId = arrayId;
-
-				if ( treeChild->maxArrayId < arrayId ) {
-					treeChild->maxArrayId = arrayId;
-				}
-
-				arrayObj->arrayObjects = treeChild->arrayObjects;
-				treeChild->arrayObjects = arrayObj;
-				treeObj = arrayObj;
+				treeObj = map2json_getArrayObject(treeChild, arrayId);
 			} else {
 				treeObj = treeChild;
 			}
@@ -243,12 +255,6 @@ char *map2json_createJsonStringArray(char *buffer, map2json_tree_t *tree) {
 		while ( arrayObj != NULL ) {
 			if ( arrayObj->arrayId == i ) {
 				pos = map2json_createJsonString(pos, arrayObj);
-
-				if ( i < tree->maxArrayId ) {
-					pos = map2json_addChar(pos, ',');
-				}
-
-				break;
 			}
 			arrayObj = arrayObj->arrayObjects;
 		}
