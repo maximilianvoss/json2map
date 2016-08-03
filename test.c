@@ -89,7 +89,7 @@ void testValues(map2json_keyvalue_t *map, char *jsonString) {
 	i++;
 
 	errorCount += assertValue("{\"test\":{\"name\":\"picture\",\"file\":\"/var/www/html/pictureIn.png\",\"_id\":{\"$oid\":\"566950d1afc4a3c1d86fcdfb\"},\"array\":[{\"mysubobject\":\"value\","
-			                          "\"secondobject\":0},1,\"b\",3,\"d\",""{\"object\":\"test\",\"object2\":\"test2\"}],\"nullpointer\":null,\"number\":1234,\"true\":true,\"false\":false}}",
+			                          "\"secondobject\":0},1,\"b\",3,\"d\",""{\"object\":\"test\",\"object2\":\"test2\"}],\"nullpointer\":null,\"number\":1234,\"true\":true,\"false\":false,\"fakePrimitive\":new Function()}}",
 	                          jsonString);
 
 	printf("Error Count: %d\n", errorCount);

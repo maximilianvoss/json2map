@@ -3,6 +3,7 @@
 #include "json2map.h"
 #include "map2json.h"
 #include "stdio.h"
+#include "config.h"
 
 #ifdef DEBUG
 #include "test.h"
@@ -84,7 +85,10 @@ int main(int argc, char **argv) {
 	map2json_push(map2jsonObj, "test.number", "1234");
 	map2json_push(map2jsonObj, "test.true", "true");
 	map2json_push(map2jsonObj, "test.false", "false");
-
+	
+	char primitiveMethod[] = " new Function()";
+	*primitiveMethod = PRIMITIVE_PREFIXER;
+	map2json_push(map2jsonObj, "test.fakePrimitive", primitiveMethod);
 
 	printf("%s\n", map2json_create(map2jsonObj));
 

@@ -144,10 +144,13 @@ void map2json_storeValues(map2json_tree_t *obj, char *value) {
 		return;
 	}
 
-	if ( stringlib_isInteger(value) || !strcmp(value, "null") || !strcmp(value, "true") || !strcmp(value, "false") ) {
+	if ( stringlib_isInteger(value) || !strcmp(value, "null") || !strcmp(value, "true") || !strcmp(value, "false") || *value == PRIMITIVE_PREFIXER ) {
 		DEBUG_TEXT("map2json_storeValues([map2json_tree_t *], %s): object is primitive", value);
 		obj->type = JSMN_PRIMITIVE;
 		obj->value = value;
+		if ( *value == PRIMITIVE_PREFIXER ) {
+			obj->value++;
+		}
 	} else {
 		DEBUG_TEXT("map2json_storeValues([map2json_tree_t *], %s): object is string", value);
 		obj->type = JSMN_STRING;

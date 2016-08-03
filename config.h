@@ -10,4 +10,6 @@
 #define MAP_ARRAY_START '['
 #define MAP_ARRAY_END ']'
 
+#define PRIMITIVE_PREFIXER 27
+
 #endif
