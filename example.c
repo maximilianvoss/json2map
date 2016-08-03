@@ -87,7 +87,7 @@ int main(int argc, char **argv) {
 	map2json_push(map2jsonObj, "test.false", "false");
 	
 	char primitiveMethod[] = " new Function()";
-	*primitiveMethod = PRIMITIVE_PREFIXER;
+	*primitiveMethod = JSON2MAP_PRIMITIVE_PREFIXER;
 	map2json_push(map2jsonObj, "test.fakePrimitive", primitiveMethod);
 
 	printf("%s\n", map2json_create(map2jsonObj));

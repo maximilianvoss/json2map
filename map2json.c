@@ -33,7 +33,7 @@ map2json_t *map2json_init() {
 	map2json_t *obj;
 
 	obj = (map2json_t *) malloc(sizeof(map2json_t));
-	obj->buffer = (char *) calloc(sizeof(char), BUFFER_LENGTH);
+	obj->buffer = (char *) calloc(sizeof(char), JSON2MAP_BUFFER_LENGTH);
 	obj->pairs = NULL;
 
 	DEBUG_PUT("map2json_init()... DONE");
@@ -64,8 +64,8 @@ void map2json_push(map2json_t *obj, char *key, char *value) {
 
 long map2json_checkArrayObject(char *key) {
 	DEBUG_TEXT("map2json_checkArrayObject(%s)... ", key);
-	char *ptr = strchr(key, MAP_ARRAY_START);
-	if ( ptr && strchr(key, MAP_ARRAY_END) ) {
+	char *ptr = strchr(key, JSON2MAP_MAP_ARRAY_START);
+	if ( ptr && strchr(key, JSON2MAP_MAP_ARRAY_END) ) {
 		return ptr - key;
 	}
 	DEBUG_TEXT("map2json_checkArrayObject(%s)... ", key);
@@ -119,7 +119,7 @@ map2json_tree_t *map2json_createEmptyTreeObject(char *key) {
 long map2json_getArrayId(char *key) {
 	DEBUG_TEXT("map2json_getArrayId(%s)... ", key);
 
-	char buffer[BUFFER_LENGTH];
+	char buffer[JSON2MAP_BUFFER_LENGTH];
 
 	if ( key == NULL ) {
 		return -1;
@@ -144,11 +144,11 @@ void map2json_storeValues(map2json_tree_t *obj, char *value) {
 		return;
 	}
 
-	if ( stringlib_isInteger(value) || !strcmp(value, "null") || !strcmp(value, "true") || !strcmp(value, "false") || *value == PRIMITIVE_PREFIXER ) {
+	if ( stringlib_isInteger(value) || !strcmp(value, "null") || !strcmp(value, "true") || !strcmp(value, "false") || *value == JSON2MAP_PRIMITIVE_PREFIXER ) {
 		DEBUG_TEXT("map2json_storeValues([map2json_tree_t *], %s): object is primitive", value);
 		obj->type = JSMN_PRIMITIVE;
 		obj->value = value;
-		if ( *value == PRIMITIVE_PREFIXER ) {
+		if ( *value == JSON2MAP_PRIMITIVE_PREFIXER ) {
 			obj->value++;
 		}
 	} else {
@@ -190,15 +190,15 @@ map2json_tree_t *map2json_createTree(map2json_t *obj) {
 	map2json_tree_t *treeObj;
 	map2json_tree_t *treeChild;
 	map2json_keyvalue_t *pair;
-	stringlib_tokens_t nameTokens[MAX_MAP_KEY_DEPTH];
-	char buffer[BUFFER_LENGTH];
+	stringlib_tokens_t nameTokens[JSON2MAP_MAX_MAP_KEY_DEPTH];
+	char buffer[JSON2MAP_BUFFER_LENGTH];
 	int i;
 
 	treeRoot = map2json_createEmptyTreeObject(NULL);
 
 	pair = obj->pairs;
 	while ( pair != NULL ) {
-		int count = stringlib_splitTokens(nameTokens, pair->key, MAP_OBJECT_SEPARATOR, MAX_MAP_KEY_DEPTH);
+		int count = stringlib_splitTokens(nameTokens, pair->key, JSON2MAP_MAP_OBJECT_SEPARATOR, JSON2MAP_MAX_MAP_KEY_DEPTH);
 		treeObj = treeRoot;
 
 		for ( i = 0; i < count; i++ ) {
@@ -251,7 +251,7 @@ char *map2json_createJsonStringArray(char *buffer, map2json_tree_t *tree) {
 
 	int i;
 	char *pos = buffer;
-	pos = map2json_addChar(pos, MAP_ARRAY_START);
+	pos = map2json_addChar(pos, JSON2MAP_MAP_ARRAY_START);
 
 	for ( i = 0; i < tree->maxArrayId + 1; i++ ) {
 		map2json_tree_t *arrayObj = tree->arrayObjects;
@@ -262,7 +262,7 @@ char *map2json_createJsonStringArray(char *buffer, map2json_tree_t *tree) {
 			arrayObj = arrayObj->arrayObjects;
 		}
 	}
-	pos = map2json_addChar(pos, MAP_ARRAY_END);
+	pos = map2json_addChar(pos, JSON2MAP_MAP_ARRAY_END);
 
 	DEBUG_TEXT("map2json_createJsonStringArray(%s, [map2json_tree_t *])... DONE", buffer);
 	return pos;
