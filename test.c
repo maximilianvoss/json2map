@@ -86,7 +86,6 @@ void testValues(map2json_keyvalue_t *map, char *jsonString) {
 
 	errorCount += assertValue("test.false", map[i].key);
 	errorCount += assertValue("false", map[i].value);
-	i++;
 
 	errorCount += assertValue("{\"test\":{\"name\":\"picture\",\"file\":\"/var/www/html/pictureIn.png\",\"_id\":{\"$oid\":\"566950d1afc4a3c1d86fcdfb\"},\"array\":[{\"mysubobject\":\"value\","
 			                          "\"secondobject\":0},1,\"b\",3,\"d\",""{\"object\":\"test\",\"object2\":\"test2\"}],\"nullpointer\":null,\"number\":1234,\"true\":true,\"false\":false,\"fakePrimitive\":new Function()}}",
