@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "stringlib.h"
 
 
@@ -50,4 +51,9 @@ int stringlib_isInteger(char *str) {
 		ptr++;
 	}
 	return 1;
+}
+
+char *stringlib_longToString(char *buffer, long value) {
+	sprintf(buffer, "%ld", value);
+	return buffer;
 }

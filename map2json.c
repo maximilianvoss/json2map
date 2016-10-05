@@ -7,26 +7,19 @@
 
 
 long map2json_checkArrayObject(char *key);
-
 map2json_tree_t *map2json_findTreeNode(map2json_tree_t *root, char *key);
-
 map2json_tree_t *map2json_createEmptyTreeObject(char *key);
-
 long map2json_getArrayId(char *key);
-
 void map2json_storeValues(map2json_tree_t *obj, char *value);
-
 map2json_tree_t *map2json_createTree(map2json_t *obj);
-
 char *map2json_addChar(char *str, char chr);
-
 char *map2json_createJsonStringArray(char *buffer, map2json_tree_t *tree);
-
 void map2json_freeTreeMemory(map2json_tree_t *obj);
-
 void map2json_freePairsMemory(map2json_keyvalue_t *pair);
-
 void map2json_destroy(map2json_t *obj);
+
+#define ARRAYID_NOT_SET -1
+#define ARRAYID_IS_COUNT -2
 
 map2json_t *map2json_init() {
 	DEBUG_PUT("map2json_init()... ");
@@ -122,13 +115,17 @@ long map2json_getArrayId(char *key) {
 	char buffer[JSON2MAP_BUFFER_LENGTH];
 
 	if ( key == NULL ) {
-		return -1;
+		return ARRAYID_NOT_SET;
 	}
 	key++;
 	long length = strlen(key);
 
 	memcpy(buffer, key, length);
 	buffer[length - 1] = '\0';
+
+	if ( *key == JSON2MAP_MAP_ARRAY_COUNT ) {
+		return ARRAYID_IS_COUNT;
+	}
 
 	DEBUG_TEXT("map2json_getArrayId(%s)... DONE", key);
 	return atoi(buffer);
@@ -140,6 +137,7 @@ void map2json_storeValues(map2json_tree_t *obj, char *value) {
 
 	if ( obj->type == JSMN_ARRAY ) {
 		DEBUG_TEXT("map2json_storeValues([map2json_tree_t *], %s): object is array", value);
+		obj->maxArrayId = atoi(value);
 		DEBUG_TEXT("map2json_storeValues([map2json_tree_t *], %s)... DONE ", value);
 		return;
 	}
@@ -164,6 +162,10 @@ void map2json_storeValues(map2json_tree_t *obj, char *value) {
 map2json_tree_t *map2json_getArrayObject(map2json_tree_t *obj, long arrayId) {
 	map2json_tree_t *arrObj;
 
+	if ( arrayId == ARRAYID_IS_COUNT ) {
+		return obj;
+	}
+	
 	arrObj = obj->arrayObjects;
 	while ( arrObj != NULL ) {
 		if ( arrObj->arrayId == arrayId ) {
@@ -204,7 +206,7 @@ map2json_tree_t *map2json_createTree(map2json_t *obj) {
 		for ( i = 0; i < count; i++ ) {
 			stringlib_getToken(&nameTokens[i], pair->key, buffer);
 
-			long arrayId = -1;
+			long arrayId = ARRAYID_NOT_SET;
 			long pos = map2json_checkArrayObject(buffer);
 			if ( pos ) {
 				arrayId = map2json_getArrayId(&buffer[pos]);

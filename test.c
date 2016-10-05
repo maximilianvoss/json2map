@@ -72,6 +72,10 @@ void testValues(map2json_keyvalue_t *map, char *jsonString) {
 	errorCount += assertValue("test2", map[i].value);
 	i++;
 
+	errorCount += assertValue("test.array[x]", map[i].key);
+	errorCount += assertValue("6", map[i].value);
+	i++;
+
 	errorCount += assertValue("test.nullpointer", map[i].key);
 	errorCount += assertValue("null", map[i].value);
 	i++;

@@ -15,5 +15,6 @@ int stringlib_getIndexOf(char *str, char chr);
 int stringlib_splitTokens(stringlib_tokens_t *tokens, char *str, char chr, int maxCount);
 
 int stringlib_isInteger(char *str);
+char *stringlib_longToString(char *buffer, long value);
 
 #endif

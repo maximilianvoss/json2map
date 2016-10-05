@@ -1,8 +1,8 @@
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 #include "json2map.h"
 #include "map2json.h"
-#include "stdio.h"
 #include "config.h"
 
 #ifdef DEBUG
@@ -81,6 +81,7 @@ int main(int argc, char **argv) {
 	map2json_push(map2jsonObj, "test.array[4]", "d");
 	map2json_push(map2jsonObj, "test.array[5].object", "test");
 	map2json_push(map2jsonObj, "test.array[5].object2", "test2");
+	map2json_push(map2jsonObj, "test.array[x]", "6");
 	map2json_push(map2jsonObj, "test.nullpointer", "null");
 	map2json_push(map2jsonObj, "test.number", "1234");
 	map2json_push(map2jsonObj, "test.true", "true");

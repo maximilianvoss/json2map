@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include "jsmn.h"
 #include "debugging.h"
+#include "stringlib.h"
 
 void json2map_setTokenValue(char *jsonString, jsmntok_t *token, char *buffer);
 
@@ -64,6 +65,11 @@ char *json2map_concatPaths(char *parent, char *key, int arrayIdx) {
 		sprintf(arrayIdxBuff, "%c%d%c", JSON2MAP_MAP_ARRAY_START, arrayIdx, JSON2MAP_MAP_ARRAY_END);
 		arrayIdLen += strlen(arrayIdxBuff);
 	}
+	if ( arrayIdx == -2 ) {
+		sprintf(arrayIdxBuff, "%c%c%c", JSON2MAP_MAP_ARRAY_START, JSON2MAP_MAP_ARRAY_COUNT, JSON2MAP_MAP_ARRAY_END);
+		arrayIdLen += strlen(arrayIdxBuff);
+	}
+	
 
 	path = (char *) calloc(sizeof(char), parentLen + keyLen + arrayIdLen + addition + 1);
 	memcpy(path, parent, parentLen);
@@ -74,7 +80,7 @@ char *json2map_concatPaths(char *parent, char *key, int arrayIdx) {
 
 	memcpy(path + parentLen + addition, key, keyLen);
 
-	if ( arrayIdx >= 0 ) {
+	if ( arrayIdx >= 0 || arrayIdx == -2 ) {
 		memcpy(path + parentLen + keyLen + addition, arrayIdxBuff, arrayIdLen);
 	}
 
@@ -133,6 +139,14 @@ int json2map_parseArray(json2map_t *obj, char *path, char *jsonString, jsmntok_t
 
 		free(pathBuff);
 	}
+
+	pathBuff = json2map_concatPaths(NULL, path, -2);
+
+	stringlib_longToString(buffer, count);
+	obj->hookMethod(obj->hookMethodData, pathBuff, buffer);
+	memset(buffer, '\0', JSON2MAP_BUFFER_LENGTH);
+	free(pathBuff);
+
 
 	DEBUG_TEXT("json2map_parseArray([json2map_t *], %s, %s, [jsmntok_t *], %d, %d)... DONE", path, jsonString, start, end);
 	if ( i < 0 ) {
