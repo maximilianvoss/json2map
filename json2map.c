@@ -8,7 +8,7 @@
 #include "debugging.h"
 #include "stringlib.h"
 
-void json2map_setTokenValue(char *jsonString, jsmntok_t *token, char *buffer);
+char *json2map_setTokenValue(char *jsonString, jsmntok_t *token);
 
 char *json2map_concatPaths(char *parent, char *key, int arrayIdx);
 
@@ -34,10 +34,13 @@ void json2map_destroy(json2map_t *obj) {
 }
 
 
-void json2map_setTokenValue(char *jsonString, jsmntok_t *token, char *buffer) {
-	DEBUG_TEXT("json2map_setTokenValue(%s, [jsmntok_t *], %s)... ", jsonString, buffer);
+char *json2map_setTokenValue(char *jsonString, jsmntok_t *token) {
+	DEBUG_TEXT("json2map_setTokenValue(%s, [jsmntok_t *])... ", jsonString);
+	char *buffer;
+	buffer = calloc(sizeof(char), token->end - token->start + 1);
 	memcpy(buffer, jsonString + token->start, token->end - token->start);
-	DEBUG_TEXT("json2map_setTokenValue(%s, [jsmntok_t *], %s)... DONE", jsonString, buffer);
+	DEBUG_TEXT("json2map_setTokenValue(%s, [jsmntok_t *])... DONE", jsonString);
+	return buffer;
 }
 
 
@@ -109,7 +112,7 @@ int json2map_calcEnd(jsmntok_t *token, int start, int end) {
 int json2map_parseArray(json2map_t *obj, char *path, char *jsonString, jsmntok_t *token, int start, int end) {
 	DEBUG_TEXT("json2map_parseArray([json2map_t *], %s, %s, [jsmntok_t *], %d, %d)...", path, jsonString, start, end);
 	int newEnd;
-	char buffer[JSON2MAP_BUFFER_LENGTH];
+	char *buffer;
 	char *pathBuff;
 	int count = 0;
 
@@ -126,10 +129,9 @@ int json2map_parseArray(json2map_t *obj, char *path, char *jsonString, jsmntok_t
 				break;
 			case JSMN_STRING:
 			case JSMN_PRIMITIVE:
-				memset(buffer, '\0', JSON2MAP_BUFFER_LENGTH);
-				json2map_setTokenValue(jsonString, &token[i], buffer);
+				buffer = json2map_setTokenValue(jsonString, &token[i]);
 				obj->hookMethod(obj->hookMethodData, pathBuff, buffer);
-				memset(buffer, '\0', JSON2MAP_BUFFER_LENGTH);
+				free(buffer);
 				i++;
 				break;
 			default:
@@ -142,11 +144,10 @@ int json2map_parseArray(json2map_t *obj, char *path, char *jsonString, jsmntok_t
 
 	pathBuff = json2map_concatPaths(NULL, path, -2);
 
-	stringlib_longToString(buffer, count);
-	obj->hookMethod(obj->hookMethodData, pathBuff, buffer);
-	memset(buffer, '\0', JSON2MAP_BUFFER_LENGTH);
+	char smallBuffer[25];
+	stringlib_longToString(smallBuffer, count);
+	obj->hookMethod(obj->hookMethodData, pathBuff, smallBuffer);
 	free(pathBuff);
-
 
 	DEBUG_TEXT("json2map_parseArray([json2map_t *], %s, %s, [jsmntok_t *], %d, %d)... DONE", path, jsonString, start, end);
 	if ( i < 0 ) {
@@ -160,18 +161,15 @@ int json2map_parseObject(json2map_t *obj, char *path, char *jsonString, jsmntok_
 	DEBUG_TEXT("json2map_parseObject([json2map_t *], %s, %s, [jsmntok_t *], %d, %d)...", path, jsonString, start, end);
 
 	int newEnd;
-	char buffer[JSON2MAP_BUFFER_LENGTH];
+	char *buffer;
 	char *pathBuff = NULL;
 
 	int i = start;
 	while ( i < end && i > 0 ) {
 		if ( token[i].type == JSMN_STRING ) {
-			memset(buffer, '\0', JSON2MAP_BUFFER_LENGTH);
-			json2map_setTokenValue(jsonString, &token[i], buffer);
-
+			buffer = json2map_setTokenValue(jsonString, &token[i]);
 			pathBuff = json2map_concatPaths(path, buffer, -1);
-
-			memset(buffer, '\0', JSON2MAP_BUFFER_LENGTH);
+			free(buffer);
 		} else {
 			DEBUG_TEXT("json2map_parseObject([json2map_t *], %s, %s, [jsmntok_t *], %d, %d): ERROR: Name of object has to be a string", path, jsonString, start, end);
 			return -1;
@@ -185,10 +183,9 @@ int json2map_parseObject(json2map_t *obj, char *path, char *jsonString, jsmntok_
 				break;
 			case JSMN_STRING:
 			case JSMN_PRIMITIVE:
-				memset(buffer, '\0', JSON2MAP_BUFFER_LENGTH);
-				json2map_setTokenValue(jsonString, &token[i], buffer);
+				buffer = json2map_setTokenValue(jsonString, &token[i]);
 				obj->hookMethod(obj->hookMethodData, pathBuff, buffer);
-				memset(buffer, '\0', JSON2MAP_BUFFER_LENGTH);
+				free(buffer);
 				i++;
 				break;
 			case JSMN_ARRAY:

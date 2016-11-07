@@ -8,7 +8,7 @@ typedef struct {
 	long length;
 } stringlib_tokens_t;
 
-void stringlib_getToken(stringlib_tokens_t *token, char *str, char *buffer);
+char *stringlib_getToken(stringlib_tokens_t *token, char *str);
 
 int stringlib_getIndexOf(char *str, char chr);
 

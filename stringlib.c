@@ -1,11 +1,15 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "stringlib.h"
 
 
-void stringlib_getToken(stringlib_tokens_t *token, char *str, char *buffer) {
+char *stringlib_getToken(stringlib_tokens_t *token, char *str) {
+	char *buffer;
+
+	buffer = calloc(sizeof(char), token->length + 1);
 	memcpy(buffer, str + token->start, token->length);
-	char *ptr = buffer + token->length;
-	*ptr = '\0';
+
+	return buffer;
 }
 
 
