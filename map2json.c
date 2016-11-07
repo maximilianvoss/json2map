@@ -233,10 +233,10 @@ map2json_tree_t *map2json_createTree(map2json_t *obj) {
 			} else {
 				treeObj = treeChild;
 			}
+			free(buffer);
 		}
 		map2json_storeValues(treeObj, pair->value);
 		pair = pair->next;
-		free(buffer);
 	}
 
 	DEBUG_PUT("map2json_createTree([map2json_t *])... DONE");
