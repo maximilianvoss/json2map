@@ -7,10 +7,10 @@ compiler:
 
 before_script:
   - mkdir /tmp/csafestring
-  - wget https://github.com/maximilianvoss/csafestring/archive/v1.4.tar.gz -O /tmp/csafestring.tar.gz
+  - wget https://github.com/maximilianvoss/csafestring/archive/v1.4.tar.gz -O /tmp/csafestring/csafestring.tar.gz
   - cd /tmp/csafestring
   - ls -al
-  - tar -xvzf /tmp/csafestring.tar.gz
+  - tar -xvzf csafestring.tar.gz
   - ls -al
   - cmake -G "Unix Makefiles" && sudo make install 
   
