@@ -13,32 +13,52 @@ char *stringlib_getToken(stringlib_tokens_t *token, char *str) {
 }
 
 
-int stringlib_splitTokens(stringlib_tokens_t *tokens, char *str, char chr, int maxCount) {
+stringlib_tokens_t *stringlib_splitTokens(char *str, char chr) {
 	char *lastPos;
 	char *newPos;
-	int count = 0;
+
+	stringlib_tokens_t *tokens = NULL;
+	stringlib_tokens_t *currentToken;
+	stringlib_tokens_t *newToken;
 
 	newPos = str;
 	lastPos = str;
 
 	while ( *newPos != '\0' ) {
 		if ( *newPos == chr ) {
-			tokens[count].start = ( lastPos - str );
-			tokens[count].length = ( newPos - lastPos );
-			lastPos = newPos + 1;
-			count++;
-			if ( count >= maxCount ) {
-				return maxCount;
+			newToken = (stringlib_tokens_t *) malloc(sizeof(stringlib_tokens_t));
+			newToken->next = NULL;
+
+			if ( tokens == NULL ) {
+				tokens = newToken;
+				currentToken = newToken;
+			} else {
+				currentToken->next = newToken;
+				currentToken = newToken;
 			}
+
+			currentToken->start = ( lastPos - str );
+			currentToken->length = ( newPos - lastPos );
+			lastPos = newPos + 1;
 		}
 		newPos++;
 	}
 	if ( newPos != str ) {
-		tokens[count].start = ( lastPos - str );
-		tokens[count].length = ( newPos - lastPos );
-		count++;
+		newToken = (stringlib_tokens_t *) malloc(sizeof(stringlib_tokens_t));
+		newToken->next = NULL;
+
+		if ( tokens == NULL ) {
+			tokens = newToken;
+			currentToken = newToken;
+		} else {
+			currentToken->next = newToken;
+			currentToken = newToken;
+		}
+
+		currentToken->start = ( lastPos - str );
+		currentToken->length = ( newPos - lastPos );
 	}
-	return count;
+	return tokens;
 }
 
 int stringlib_isInteger(char *str) {

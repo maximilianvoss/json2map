@@ -2,23 +2,16 @@
 #include "config.h"
 
 #include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
+#include <csafestring.h>
 #include "jsmn.h"
 #include "debugging.h"
 #include "stringlib.h"
 
 char *json2map_setTokenValue(char *jsonString, jsmntok_t *token);
-
-char *json2map_concatPaths(char *parent, char *key, int arrayIdx);
-
+csafestring_t *json2map_concatPaths(char *parent, char *key, int arrayIdx);
 int json2map_calcEnd(jsmntok_t *token, int start, int end);
-
 int json2map_parseArray(json2map_t *obj, char *path, char *jsonString, jsmntok_t *token, int start, int end);
-
 int json2map_parseObject(json2map_t *obj, char *path, char *jsonString, jsmntok_t *token, int start, int end);
-
-
 
 json2map_t *json2map_init() {
 	DEBUG_PUT("json2map_init()... ");
@@ -33,7 +26,6 @@ void json2map_destroy(json2map_t *obj) {
 	DEBUG_PUT("json2map_destroy()... DONE");
 }
 
-
 char *json2map_setTokenValue(char *jsonString, jsmntok_t *token) {
 	DEBUG_TEXT("json2map_setTokenValue(%s, [jsmntok_t *])... ", jsonString);
 	char *buffer;
@@ -44,51 +36,31 @@ char *json2map_setTokenValue(char *jsonString, jsmntok_t *token) {
 }
 
 
-char *json2map_concatPaths(char *parent, char *key, int arrayIdx) {
+csafestring_t *json2map_concatPaths(char *parent, char *key, int arrayIdx) {
 	DEBUG_TEXT("json2map_concatPaths(%s, %s, %d)...", parent, key, arrayIdx);
-	char *path;
+
+	csafestring_t *buffer;
 	char arrayIdxBuff[10];
 
-	long arrayIdLen = 0;
-	long keyLen = 0;
-	long parentLen = 0;
-	long addition = -1;
-
-	if ( key != NULL ) {
-		keyLen = strlen(key);
-		addition++;
-	}
-
-	if ( parent != NULL ) {
-		parentLen = strlen(parent);
-		addition++;
+	if ( parent != NULL && *parent != '\0' ) {
+		buffer = safe_create(parent);
+		safe_strchrappend(buffer, JSON2MAP_MAP_OBJECT_SEPARATOR);
+		safe_strcat(buffer, key);
+	} else {
+		buffer = safe_create(key);
 	}
 
 	if ( arrayIdx >= 0 ) {
 		sprintf(arrayIdxBuff, "%c%d%c", JSON2MAP_MAP_ARRAY_START, arrayIdx, JSON2MAP_MAP_ARRAY_END);
-		arrayIdLen += strlen(arrayIdxBuff);
+		safe_strcat(buffer, arrayIdxBuff);
 	}
 	if ( arrayIdx == -2 ) {
 		sprintf(arrayIdxBuff, "%c%c%c", JSON2MAP_MAP_ARRAY_START, JSON2MAP_MAP_ARRAY_COUNT, JSON2MAP_MAP_ARRAY_END);
-		arrayIdLen += strlen(arrayIdxBuff);
-	}
-	
-
-	path = (char *) calloc(sizeof(char), parentLen + keyLen + arrayIdLen + addition + 1);
-	memcpy(path, parent, parentLen);
-
-	if ( parentLen && keyLen ) {
-		path[parentLen] = JSON2MAP_MAP_OBJECT_SEPARATOR;
-	}
-
-	memcpy(path + parentLen + addition, key, keyLen);
-
-	if ( arrayIdx >= 0 || arrayIdx == -2 ) {
-		memcpy(path + parentLen + keyLen + addition, arrayIdxBuff, arrayIdLen);
+		safe_strcat(buffer, arrayIdxBuff);
 	}
 
 	DEBUG_TEXT("json2map_concatPaths(%s, %s, %d)... DONE", parent, key, arrayIdx);
-	return path;
+	return buffer;
 }
 
 
@@ -113,7 +85,7 @@ int json2map_parseArray(json2map_t *obj, char *path, char *jsonString, jsmntok_t
 	DEBUG_TEXT("json2map_parseArray([json2map_t *], %s, %s, [jsmntok_t *], %d, %d)...", path, jsonString, start, end);
 	int newEnd;
 	char *buffer;
-	char *pathBuff;
+	csafestring_t *pathBuff;
 	int count = 0;
 
 	int i = start;
@@ -125,12 +97,12 @@ int json2map_parseArray(json2map_t *obj, char *path, char *jsonString, jsmntok_t
 		switch ( token[i].type ) {
 			case JSMN_OBJECT:
 				newEnd = json2map_calcEnd(token, i, end);
-				i = json2map_parseObject(obj, pathBuff, jsonString, token, i + 1, newEnd + 1);
+				i = json2map_parseObject(obj, pathBuff->data, jsonString, token, i + 1, newEnd + 1);
 				break;
 			case JSMN_STRING:
 			case JSMN_PRIMITIVE:
 				buffer = json2map_setTokenValue(jsonString, &token[i]);
-				obj->hookMethod(obj->hookMethodData, pathBuff, buffer);
+				obj->hookMethod(obj->hookMethodData, pathBuff->data, buffer);
 				free(buffer);
 				i++;
 				break;
@@ -139,15 +111,15 @@ int json2map_parseArray(json2map_t *obj, char *path, char *jsonString, jsmntok_t
 				return -1;
 		}
 
-		free(pathBuff);
+		safe_destroy(pathBuff);
 	}
 
 	pathBuff = json2map_concatPaths(NULL, path, -2);
 
 	char smallBuffer[25];
 	stringlib_longToString(smallBuffer, count);
-	obj->hookMethod(obj->hookMethodData, pathBuff, smallBuffer);
-	free(pathBuff);
+	obj->hookMethod(obj->hookMethodData, pathBuff->data, smallBuffer);
+	safe_destroy(pathBuff);
 
 	DEBUG_TEXT("json2map_parseArray([json2map_t *], %s, %s, [jsmntok_t *], %d, %d)... DONE", path, jsonString, start, end);
 	if ( i < 0 ) {
@@ -162,7 +134,7 @@ int json2map_parseObject(json2map_t *obj, char *path, char *jsonString, jsmntok_
 
 	int newEnd;
 	char *buffer;
-	char *pathBuff = NULL;
+	csafestring_t *pathBuff = NULL;
 
 	int i = start;
 	while ( i < end && i > 0 ) {
@@ -179,24 +151,24 @@ int json2map_parseObject(json2map_t *obj, char *path, char *jsonString, jsmntok_
 		switch ( token[i].type ) {
 			case JSMN_OBJECT:
 				newEnd = json2map_calcEnd(token, i, end);
-				i = json2map_parseObject(obj, pathBuff, jsonString, token, i + 1, newEnd + 1);
+				i = json2map_parseObject(obj, pathBuff->data, jsonString, token, i + 1, newEnd + 1);
 				break;
 			case JSMN_STRING:
 			case JSMN_PRIMITIVE:
 				buffer = json2map_setTokenValue(jsonString, &token[i]);
-				obj->hookMethod(obj->hookMethodData, pathBuff, buffer);
+				obj->hookMethod(obj->hookMethodData, pathBuff->data, buffer);
 				free(buffer);
 				i++;
 				break;
 			case JSMN_ARRAY:
 				newEnd = json2map_calcEnd(token, i, end);
-				i = json2map_parseArray(obj, pathBuff, jsonString, token, i + 1, newEnd + 1);
+				i = json2map_parseArray(obj, pathBuff->data, jsonString, token, i + 1, newEnd + 1);
 				break;
 			default:
 				DEBUG_TEXT("json2map_parseObject([json2map_t *], %s, %s, [jsmntok_t *], %d, %d): ERROR: Not defined type", path, jsonString, start, end);
 				return -1;
 		}
-		free(pathBuff);
+		safe_destroy(pathBuff);
 	}
 
 	DEBUG_TEXT("json2map_parseObject([json2map_t *], %s, %s, [jsmntok_t *], %d, %d)... DONE", path, jsonString, start, end);
@@ -226,7 +198,6 @@ int json2map_parse(json2map_t *obj, char *jsonString) {
 	p.pos = 0;
 	jsmn_parse(&p, jsonString, strlen(jsonString), token, count);
 	
-
 	if ( count < 1 || token[0].type != JSMN_OBJECT ) {
 		DEBUG_TEXT("json2map_parseObject([json2map_t *], %s): ERROR: first object needs to be a valid object", jsonString);
 		return -1;

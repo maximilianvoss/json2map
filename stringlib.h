@@ -3,17 +3,14 @@
 
 #include "string.h"
 
-typedef struct {
+typedef struct s_stringlib_token {
 	long start;
 	long length;
+	struct s_stringlib_token *next;
 } stringlib_tokens_t;
 
 char *stringlib_getToken(stringlib_tokens_t *token, char *str);
-
-int stringlib_getIndexOf(char *str, char chr);
-
-int stringlib_splitTokens(stringlib_tokens_t *tokens, char *str, char chr, int maxCount);
-
+stringlib_tokens_t *stringlib_splitTokens(char *str, char chr);
 int stringlib_isInteger(char *str);
 char *stringlib_longToString(char *buffer, long value);
 
