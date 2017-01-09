@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.6)
+cmake_minimum_required(VERSION 2.8)
 project(json2map)
 
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules ${CMAKE_MODULE_PATH})
@@ -17,7 +17,7 @@ set(SOURCE_FILES
         config.h)
 
 set(CMAKE_VERBOSE_MAKEFILE on)
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -O3 -fstack-protector-strong -Wformat -Werror=format-security")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -O3")
 
 if (${CMAKE_BUILD_TYPE} STREQUAL Debug)
     set(SOURCE_FILES ${SOURCE_FILES} test.c test.h example.c)
