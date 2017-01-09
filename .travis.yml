@@ -6,12 +6,10 @@ compiler:
   - gcc
 
 before_script:
-  - mkdir /tmp/csafestring
-  - wget https://github.com/maximilianvoss/csafestring/archive/v1.4.tar.gz -O /tmp/csafestring/csafestring.tar.gz
-  - cd /tmp/csafestring
-  - ls -al
+  - wget https://github.com/maximilianvoss/csafestring/archive/v1.4.tar.gz -O /tmp/csafestring.tar.gz
+  - cd /tmp
   - tar -xvzf csafestring.tar.gz
-  - ls -al
+  - cd csafestring-1.4
   - cmake -G "Unix Makefiles" && sudo make install 
   
 script:
