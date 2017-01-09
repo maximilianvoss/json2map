@@ -7,6 +7,7 @@ compiler:
 
 before_script:
   - wget https://github.com/maximilianvoss/csafestring/archive/v1.4.tar.gz -O /tmp/csafestring.tar.gz
+  - mkdir /tmp/csafestring
   - tar -xvzf /tmp/csafestring.tar.gz -C /tmp/csafestring/
   - cd /tmp/csafestring
   - cmake -G "Unix Makefiles" && sudo make install 
