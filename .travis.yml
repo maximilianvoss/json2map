@@ -1,7 +1,15 @@
 language: c
 
+sudo: required
+
 compiler:
   - gcc
+
+before_script:
+  - wget https://github.com/maximilianvoss/csafestring/archive/v1.4.tar.gz -O /tmp/csafestring.tar.gz
+  - tar -xvzf /tmp/csafestring.tar.gz -C /tmp/csafestring/
+  - cd /tmp/csafestring
+  - cmake -G "Unix Makefiles" && sudo make install 
   
 script:
   - cmake -G "Unix Makefiles" && make
