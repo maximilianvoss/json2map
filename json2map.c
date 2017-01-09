@@ -211,15 +211,21 @@ int json2map_parse(json2map_t *obj, char *jsonString) {
 	DEBUG_TEXT("json2map_parseObject([json2map_t *], %s)... ", jsonString);
 
 	jsmn_parser p;
-	jsmntok_t token[JSON2MAP_MAX_JSON_TOKENS];
+	jsmntok_t *token;
 
 	jsmn_init(&p);
 
-	int count = jsmn_parse(&p, jsonString, strlen(jsonString), token, JSON2MAP_MAX_JSON_TOKENS);
+	int count = jsmn_parse(&p, jsonString, strlen(jsonString), NULL, 0);
+	DEBUG_TEXT("json2map_parseObject([json2map_t *], %s): Count: %d", jsonString, count);
 	if ( count < 0 ) {
 		DEBUG_TEXT("json2map_parseObject([json2map_t *], %s): ERROR: no object found", jsonString);
 		return -1;
 	}
+
+	token = (jsmntok_t *) malloc(sizeof(jsmntok_t) * count);
+	p.pos = 0;
+	jsmn_parse(&p, jsonString, strlen(jsonString), token, count);
+	
 
 	if ( count < 1 || token[0].type != JSMN_OBJECT ) {
 		DEBUG_TEXT("json2map_parseObject([json2map_t *], %s): ERROR: first object needs to be a valid object", jsonString);
@@ -227,7 +233,9 @@ int json2map_parse(json2map_t *obj, char *jsonString) {
 	}
 
 	DEBUG_TEXT("json2map_parseObject([json2map_t *], %s)... DONE", jsonString);
-	return json2map_parseObject(obj, NULL, jsonString, token, 1, count);
+	int retVal = json2map_parseObject(obj, NULL, jsonString, token, 1, count);
+	free(token);
+	return retVal;
 }
 
 
