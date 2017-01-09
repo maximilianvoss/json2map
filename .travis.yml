@@ -10,6 +10,7 @@ before_script:
   - mkdir /tmp/csafestring
   - tar -xvzf /tmp/csafestring.tar.gz -C /tmp/csafestring/
   - cd /tmp/csafestring
+  - ls -al
   - cmake -G "Unix Makefiles" && sudo make install 
   
 script:
