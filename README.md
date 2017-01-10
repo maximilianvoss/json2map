@@ -46,6 +46,9 @@ test.true = true
 test.false = false
 ```
 
-It also works the other way arround. So your key/value map can be transformed to proper JSON again.
+It also works the other way around. So your key/value map can be transformed to proper JSON again.
 All keys and value are stored as strings. To check for primitives it might be easiest to check for digits and the values "null", "true" and "false". The representation of the key/value map can be changed easily as a *hook method* has to be defined and registered. So your key/value map representation can be used quite easily.  
 For more details consult example.c
+
+## Dependencies
+This library depends on [csafestring](https://github.com/maximilianvoss/csafestring).
