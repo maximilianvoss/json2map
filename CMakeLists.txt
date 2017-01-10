@@ -19,15 +19,12 @@ set(SOURCE_FILES
 set(CMAKE_VERBOSE_MAKEFILE on)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -O3")
 
-if (${CMAKE_BUILD_TYPE} STREQUAL Debug)
-    set(SOURCE_FILES ${SOURCE_FILES} test.c test.h example.c)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDEBUG")
-    add_executable(json2map ${SOURCE_FILES})
-    target_link_libraries(json2map ${CSAFESTRING_LIBRARY})
-else (${CMAKE_BUILD_TYPE} STREQUAL Release)
-    add_library(json2map ${SOURCE_FILES})
-    target_link_libraries(json2map ${CSAFESTRING_LIBRARY})
-    install(TARGETS json2map DESTINATION /usr/local/lib)
-    install(FILES json2map.h map2json.h jsmn.h DESTINATION /usr/local/include)
-endif (${CMAKE_BUILD_TYPE} STREQUAL Debug)
+add_library(json2map ${SOURCE_FILES})
+target_link_libraries(json2map ${CSAFESTRING_LIBRARY})
+install(TARGETS json2map DESTINATION /usr/local/lib)
+install(FILES json2map.h map2json.h jsmn.h DESTINATION /usr/local/include)
+
+enable_testing()
+add_subdirectory(test)
+add_subdirectory(example)
 

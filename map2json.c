@@ -173,15 +173,15 @@ map2json_tree_t *map2json_getArrayObject(map2json_tree_t *obj, long arrayId) {
 		if ( arrObj->arrayId == arrayId ) {
 			return arrObj;
 		}
-		arrObj = arrObj->next;
+		arrObj = arrObj->arrayObjects;
 
 	}
 	arrObj = map2json_createEmptyTreeObject(NULL);
 	if ( obj->maxArrayId < arrayId ) {
-		obj->maxArrayId = arrayId;
+		obj->maxArrayId = arrayId + 1;
 	}
 	arrObj->arrayId = arrayId;
-	arrObj->next = obj->arrayObjects;
+	arrObj->arrayObjects = obj->arrayObjects;
 	obj->arrayObjects = arrObj;
 
 	return arrObj;
@@ -248,13 +248,16 @@ void map2json_createJsonStringArray(csafestring_t *buffer, map2json_tree_t *tree
 	int i;
 	safe_strchrappend(buffer, JSON2MAP_MAP_ARRAY_START);
 
-	for ( i = 0; i < tree->maxArrayId + 1; i++ ) {
+	for ( i = 0; i < tree->maxArrayId; i++ ) {
 		map2json_tree_t *arrayObj = tree->arrayObjects;
 		while ( arrayObj != NULL ) {
 			if ( arrayObj->arrayId == i ) {
 				map2json_createJsonString(buffer, arrayObj);
 			}
 			arrayObj = arrayObj->arrayObjects;
+		}
+		if ( i < tree->maxArrayId - 1 ) {
+			safe_strchrappend(buffer, ',');
 		}
 	}
 	safe_strchrappend(buffer, JSON2MAP_MAP_ARRAY_END);
@@ -306,6 +309,7 @@ void map2json_createJsonString(csafestring_t *buffer, map2json_tree_t *tree) {
 char *map2json_create(map2json_t *obj) {
 	DEBUG_PUT("map2json_create([map2json_t *])... ");
 	obj->tree = map2json_createTree(obj);
+	safe_strcpy(obj->buffer, "");
 	map2json_createJsonString(obj->buffer, obj->tree);
 
 	DEBUG_PUT("map2json_create([map2json_t *])... ");

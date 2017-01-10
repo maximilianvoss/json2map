@@ -39,15 +39,15 @@ char *json2map_setTokenValue(char *jsonString, jsmntok_t *token) {
 csafestring_t *json2map_concatPaths(char *parent, char *key, int arrayIdx) {
 	DEBUG_TEXT("json2map_concatPaths(%s, %s, %d)...", parent, key, arrayIdx);
 
-	csafestring_t *buffer;
 	char arrayIdxBuff[10];
-
+	csafestring_t *buffer = safe_create(NULL);
+	
 	if ( parent != NULL && *parent != '\0' ) {
-		buffer = safe_create(parent);
+		safe_strcpy(buffer, parent);
 		safe_strchrappend(buffer, JSON2MAP_MAP_OBJECT_SEPARATOR);
 		safe_strcat(buffer, key);
 	} else {
-		buffer = safe_create(key);
+		safe_strcpy(buffer, key);
 	}
 
 	if ( arrayIdx >= 0 ) {
