@@ -306,6 +306,7 @@ void map2json_createJsonString(csafestring_t *buffer, map2json_tree_t *tree) {
 char *map2json_create(map2json_t *obj) {
 	DEBUG_PUT("map2json_create([map2json_t *])... ");
 	obj->tree = map2json_createTree(obj);
+	safe_strcpy(obj->buffer, "");
 	map2json_createJsonString(obj->buffer, obj->tree);
 
 	DEBUG_PUT("map2json_create([map2json_t *])... ");
