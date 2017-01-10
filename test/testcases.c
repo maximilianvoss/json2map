@@ -93,17 +93,18 @@ int test_map2json_numberFloat() {
 }
 
 int test_map2json_array() {
-//	map2json_t *map2jsonObj = map2json_init();
-//	map2json_push(map2jsonObj, "array[0].object1.key1", "value1");
-//	map2json_push(map2jsonObj, "array[0].object1.key2", "2");
-//	map2json_push(map2jsonObj, "array[3]", "1");
-//	map2json_push(map2jsonObj, "array[2]", "b");
-//	map2json_push(map2jsonObj, "array[1].array2[0]", "test");
-//	map2json_push(map2jsonObj, "array[1].array2[1]", "test2");
-//	map2json_push(map2jsonObj, "array[x]", "4");
-//
-//	ASSERTSTR("{\"array\":[{\"object1\":{\"key1\":\"value1\",\"key2\":2}},{\"array2\":[\"test\",\"test2\"]},\"b\",1]}", map2json_create(map2jsonObj));
-//	map2json_destroy(map2jsonObj);
+	map2json_t *map2jsonObj = map2json_init();
+	map2json_push(map2jsonObj, "array[0].object1.key1", "value1");
+	map2json_push(map2jsonObj, "array[0].object1.key2", "2");
+	map2json_push(map2jsonObj, "array[3]", "1");
+	map2json_push(map2jsonObj, "array[2]", "b");
+	map2json_push(map2jsonObj, "array[1].array2[0]", "test");
+	map2json_push(map2jsonObj, "array[1].array2[1]", "test2");
+	map2json_push(map2jsonObj, "array[1].array2[x]", "2");
+	map2json_push(map2jsonObj, "array[x]", "4");
+
+	ASSERTSTR("{\"array\":[{\"object1\":{\"key1\":\"value1\",\"key2\":2}},{\"array2\":[\"test\",\"test2\"]},\"b\",1]}", map2json_create(map2jsonObj));
+	map2json_destroy(map2jsonObj);
 	return 0;
 }
 
