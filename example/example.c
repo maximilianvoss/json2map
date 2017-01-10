@@ -1,15 +1,8 @@
-#include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include "json2map.h"
-#include "map2json.h"
-#include "config.h"
-
-#ifdef DEBUG
-#include "test.h"
-#endif
-
-#define ARRAY_COUNT 16
+#include "../json2map.h"
+#include "../map2json.h"
+#include "../config.h"
 
 #define JSON_EXAMPLE "\
 {\
@@ -36,43 +29,29 @@
 		\"nullpointer\":null,\
 		\"number\":1234,\
 		\"true\":true,\
-		\"false\":false\
+		\"false\":false,\
+		\"test.fakePrimitive\": function()\
 	}\
 }"
 
 
 void hookMethod(void *data, char *key, char *value) {
-	int i;
-
-	map2json_keyvalue_t *map = (map2json_keyvalue_t *) data;
-	for ( i = 0; i < ARRAY_COUNT; i++ ) {
-		if ( map[i].key == NULL ) {
-			map[i].key = (char *) calloc(sizeof(char), strlen(key) + 1);
-			map[i].value = (char *) calloc(sizeof(char), strlen(value) + 1);
-			memcpy(map[i].key, key, strlen(key));
-			memcpy(map[i].value, value, strlen(value));
-			printf("%d: %s = %s\n", i, map[i].key, map[i].value);
-			return;
-		}
-	}
+	printf("Map entry: %s = %s\n", key, value);
 }
 
-
-int main(int argc, char **argv) {
-	map2json_keyvalue_t *map;
-	map = (map2json_keyvalue_t *) calloc(sizeof(map2json_keyvalue_t), ARRAY_COUNT);
+void json2map() {
 
 	json2map_t *json2mapObj = json2map_init();
-	json2map_registerHook(json2mapObj, map, &hookMethod);
+	json2map_registerHook(json2mapObj, NULL, &hookMethod);
 	json2map_parse(json2mapObj, JSON_EXAMPLE);
 	json2map_destroy(json2mapObj);
+}
 
-	printf("\n\n");
-
+void map2json() {
 	map2json_t *map2jsonObj = map2json_init();
+	map2json_push(map2jsonObj, "test._id.$oid", "566950d1afc4a3c1d86fcdfb");
 	map2json_push(map2jsonObj, "test.name", "picture");
 	map2json_push(map2jsonObj, "test.file", "/var/www/html/pictureIn.png");
-	map2json_push(map2jsonObj, "test._id.$oid", "566950d1afc4a3c1d86fcdfb");
 	map2json_push(map2jsonObj, "test.array[0].mysubobject", "value");
 	map2json_push(map2jsonObj, "test.array[0].secondobject", "0");
 	map2json_push(map2jsonObj, "test.array[1]", "1");
@@ -86,25 +65,19 @@ int main(int argc, char **argv) {
 	map2json_push(map2jsonObj, "test.number", "1234");
 	map2json_push(map2jsonObj, "test.true", "true");
 	map2json_push(map2jsonObj, "test.false", "false");
-	
-	char primitiveMethod[] = " new Function()";
+
+	char primitiveMethod[] = " function()";
 	*primitiveMethod = JSON2MAP_PRIMITIVE_PREFIXER;
 	map2json_push(map2jsonObj, "test.fakePrimitive", primitiveMethod);
 
 	printf("%s\n", map2json_create(map2jsonObj));
 
-#ifdef DEBUG
-	testValues(map, map2jsonObj->buffer->data);
-#endif
-
 	map2json_destroy(map2jsonObj);
+}
 
-	int i;
-	for ( i = 0; i < ARRAY_COUNT; i++ ) {
-		free(map[i].key);
-		free(map[i].value);
-	}
-	free(map);
+int main(int argc, char **argv) {
+	json2map();
+	map2json();
 
 	return 0;
 }
