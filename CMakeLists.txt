@@ -27,3 +27,4 @@ install(FILES json2map.h map2json.h jsmn.h DESTINATION /usr/local/include)
 enable_testing()
 add_subdirectory(test)
 add_subdirectory(example)
+
