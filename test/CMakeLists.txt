@@ -15,3 +15,13 @@ add_test(NAME test_map2json_numberFloat COMMAND testcases test_map2json_numberFl
 add_test(NAME test_map2json_array COMMAND testcases test_map2json_array)
 add_test(NAME test_map2json_primitive COMMAND testcases test_map2json_primitive)
 add_test(NAME test_map2json_deepNesting COMMAND testcases test_map2json_deepNesting)
+
+add_test(NAME test_json2map_emptyJson COMMAND testcases test_json2map_emptyJson)
+add_test(NAME test_json2map_null COMMAND testcases test_json2map_null)
+add_test(NAME test_json2map_true COMMAND testcases test_json2map_true)
+add_test(NAME test_json2map_false COMMAND testcases test_json2map_false)
+add_test(NAME test_json2map_numberInt COMMAND testcases test_json2map_numberInt)
+add_test(NAME test_json2map_numberFloat COMMAND testcases test_json2map_numberFloat)
+add_test(NAME test_json2map_array COMMAND testcases test_json2map_array)
+add_test(NAME test_json2map_primitive COMMAND testcases test_json2map_primitive)
+add_test(NAME test_json2map_deepNesting COMMAND testcases test_json2map_deepNesting)

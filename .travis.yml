@@ -6,9 +6,9 @@ compiler:
   - gcc
 
 before_script:
-  - wget https://github.com/maximilianvoss/csafestring/archive/v1.5.tar.gz -O /tmp/csafestring.tar.gz
+  - wget https://github.com/maximilianvoss/csafestring/archive/v1.6.tar.gz -O /tmp/csafestring.tar.gz
   - tar -xvzf /tmp/csafestring.tar.gz -C /tmp
-  - (cd /tmp/csafestring-1.5; cmake -G "Unix Makefiles" && sudo make install)
+  - (cd /tmp/csafestring-1.6; cmake -G "Unix Makefiles" && sudo make install)
   
 script:
   - cmake -G "Unix Makefiles" && make && make test
