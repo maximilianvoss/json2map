@@ -1,7 +1,7 @@
 #include <string.h>
 #include <stdio.h>
-#include "json2map.h"
-#include "map2json.h"
+#include "../json2map.h"
+#include "../map2json.h"
 #include "../config.h"
 
 #define JSON_EXAMPLE "\
