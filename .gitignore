@@ -30,7 +30,5 @@
 
 # Debug files
 *.dSYM/
-
-example
 .idea
 cmake-build-*
