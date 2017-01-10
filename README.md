@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/maximilianvoss/json2map.svg?branch=master)](https://travis-ci.org/maximilianvoss/json2map)
 # Json2Map
 
 Transforming JSON into a key/value map for easier access and processing in C.

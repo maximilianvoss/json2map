@@ -1,19 +1,17 @@
+#include <stdio.h>
 #include "map2json.h"
 #include "config.h"
 #include "debugging.h"
-#include <stdio.h>
-#include <stdlib.h>
 #include "stringlib.h"
 
-
+void map2json_createJsonString(csafestring_t *buffer, map2json_tree_t *tree);
 long map2json_checkArrayObject(char *key);
 map2json_tree_t *map2json_findTreeNode(map2json_tree_t *root, char *key);
 map2json_tree_t *map2json_createEmptyTreeObject(char *key);
 long map2json_getArrayId(char *key);
 void map2json_storeValues(map2json_tree_t *obj, char *value);
 map2json_tree_t *map2json_createTree(map2json_t *obj);
-char *map2json_addChar(char *str, char chr);
-char *map2json_createJsonStringArray(char *buffer, map2json_tree_t *tree);
+void map2json_createJsonStringArray(csafestring_t *buffer, map2json_tree_t *tree);
 void map2json_freeTreeMemory(map2json_tree_t *obj);
 void map2json_freePairsMemory(map2json_keyvalue_t *pair);
 void map2json_destroy(map2json_t *obj);
@@ -26,7 +24,7 @@ map2json_t *map2json_init() {
 	map2json_t *obj;
 
 	obj = (map2json_t *) malloc(sizeof(map2json_t));
-	obj->buffer = (char *) calloc(sizeof(char), JSON2MAP_BUFFER_LENGTH);
+	obj->buffer = safe_create(NULL);
 	obj->pairs = NULL;
 
 	DEBUG_PUT("map2json_init()... DONE");
@@ -39,8 +37,8 @@ void map2json_push(map2json_t *obj, char *key, char *value) {
 
 	map2json_keyvalue_t *pair = (map2json_keyvalue_t *) malloc(sizeof(map2json_keyvalue_t));
 
-	unsigned long keyLen = strlen(key) + 1;
-	unsigned long valLen = strlen(value) + 1;
+	size_t keyLen = strlen(key) + 1;
+	size_t valLen = strlen(value) + 1;
 
 	pair->key = (char *) calloc(sizeof(char), keyLen);
 	pair->value = (char *) calloc(sizeof(char), valLen);
@@ -169,7 +167,7 @@ map2json_tree_t *map2json_getArrayObject(map2json_tree_t *obj, long arrayId) {
 	if ( arrayId == ARRAYID_IS_COUNT ) {
 		return obj;
 	}
-	
+
 	arrObj = obj->arrayObjects;
 	while ( arrObj != NULL ) {
 		if ( arrObj->arrayId == arrayId ) {
@@ -196,19 +194,19 @@ map2json_tree_t *map2json_createTree(map2json_t *obj) {
 	map2json_tree_t *treeObj;
 	map2json_tree_t *treeChild;
 	map2json_keyvalue_t *pair;
-	stringlib_tokens_t nameTokens[JSON2MAP_MAX_MAP_KEY_DEPTH];
+	stringlib_tokens_t *tokens;
 	char *buffer;
-	int i;
 
 	treeRoot = map2json_createEmptyTreeObject(NULL);
 
 	pair = obj->pairs;
 	while ( pair != NULL ) {
-		int count = stringlib_splitTokens(nameTokens, pair->key, JSON2MAP_MAP_OBJECT_SEPARATOR, JSON2MAP_MAX_MAP_KEY_DEPTH);
+		tokens = stringlib_splitTokens(pair->key, JSON2MAP_MAP_OBJECT_SEPARATOR);
+
 		treeObj = treeRoot;
 
-		for ( i = 0; i < count; i++ ) {
-			buffer = stringlib_getToken(&nameTokens[i], pair->key);
+		while ( tokens != NULL ) {
+			buffer = stringlib_getToken(tokens, pair->key);
 
 			long arrayId = ARRAYID_NOT_SET;
 			long pos = map2json_checkArrayObject(buffer);
@@ -234,6 +232,7 @@ map2json_tree_t *map2json_createTree(map2json_t *obj) {
 				treeObj = treeChild;
 			}
 			free(buffer);
+			tokens = tokens->next;
 		}
 		map2json_storeValues(treeObj, pair->value);
 		pair = pair->next;
@@ -243,86 +242,65 @@ map2json_tree_t *map2json_createTree(map2json_t *obj) {
 	return treeRoot;
 }
 
-
-char *map2json_addChar(char *str, char chr) {
-	DEBUG_TEXT("map2json_addChar(%s, %c)... ", str, chr);
-	*str = chr;
-	str++;
-	DEBUG_TEXT("map2json_addChar(%s, %c)... DONE", str, chr);
-	return str;
-}
-
-
-char *map2json_createJsonStringArray(char *buffer, map2json_tree_t *tree) {
-	DEBUG_TEXT("map2json_createJsonStringArray(%s, [map2json_tree_t *])... ", buffer);
+void map2json_createJsonStringArray(csafestring_t *buffer, map2json_tree_t *tree) {
+	DEBUG_TEXT("map2json_createJsonStringArray(%s, [map2json_tree_t *])... ", buffer->data);
 
 	int i;
-	char *pos = buffer;
-	pos = map2json_addChar(pos, JSON2MAP_MAP_ARRAY_START);
+	safe_strchrappend(buffer, JSON2MAP_MAP_ARRAY_START);
 
 	for ( i = 0; i < tree->maxArrayId + 1; i++ ) {
 		map2json_tree_t *arrayObj = tree->arrayObjects;
 		while ( arrayObj != NULL ) {
 			if ( arrayObj->arrayId == i ) {
-				pos = map2json_createJsonString(pos, arrayObj);
+				map2json_createJsonString(buffer, arrayObj);
 			}
 			arrayObj = arrayObj->arrayObjects;
 		}
 	}
-	pos = map2json_addChar(pos, JSON2MAP_MAP_ARRAY_END);
+	safe_strchrappend(buffer, JSON2MAP_MAP_ARRAY_END);
 
-	DEBUG_TEXT("map2json_createJsonStringArray(%s, [map2json_tree_t *])... DONE", buffer);
-	return pos;
+	DEBUG_TEXT("map2json_createJsonStringArray(%s, [map2json_tree_t *])... DONE", buffer->data);
 }
 
-char *map2json_createJsonString(char *buffer, map2json_tree_t *tree) {
-	DEBUG_TEXT("map2json_createJsonString(%s, [map2json_tree_t *])... ", buffer);
-
-	char *pos = buffer;
-	unsigned long length;
+void map2json_createJsonString(csafestring_t *buffer, map2json_tree_t *tree) {
+	DEBUG_TEXT("map2json_createJsonString(%s, [map2json_tree_t *])... ", buffer->data);
 
 	if ( tree == NULL ) {
-		return pos;
+		return;
 	}
 
 	if ( tree->key != NULL ) {
-		pos = map2json_addChar(pos, '\"');
-		length = strlen(tree->key);
-		memcpy(pos, tree->key, length);
-		pos += length;
-		pos = map2json_addChar(pos, '\"');
-		pos = map2json_addChar(pos, ':');
+		safe_strchrappend(buffer, '\"');
+		safe_strcat(buffer, tree->key);
+		safe_strchrappend(buffer, '\"');
+		safe_strchrappend(buffer, ':');
 	}
 
 	if ( tree->type == JSMN_OBJECT ) {
-		pos = map2json_addChar(pos, '{');
-		pos = map2json_createJsonString(pos, tree->children);
-		pos = map2json_addChar(pos, '}');
+		safe_strchrappend(buffer, '{');
+		map2json_createJsonString(buffer, tree->children);
+		safe_strchrappend(buffer, '}');
 	}
 
 	if ( tree->type == JSMN_ARRAY ) {
-		pos = map2json_createJsonStringArray(pos, tree);
+		map2json_createJsonStringArray(buffer, tree);
 	}
 
 	if ( tree->type == JSMN_PRIMITIVE || tree->type == JSMN_STRING ) {
 		if ( tree->type == JSMN_STRING ) {
-			pos = map2json_addChar(pos, '\"');
+			safe_strchrappend(buffer, '\"');
 		}
-		length = strlen(tree->value);
-		memcpy(pos, tree->value, length);
-		pos += length;
+		safe_strcat(buffer, tree->value);
 		if ( tree->type == JSMN_STRING ) {
-			pos = map2json_addChar(pos, '\"');
+			safe_strchrappend(buffer, '\"');
 		}
 	}
 
 	if ( tree->next != NULL ) {
-		pos = map2json_addChar(pos, ',');
-		pos = map2json_createJsonString(pos, tree->next);
+		safe_strchrappend(buffer, ',');
+		map2json_createJsonString(buffer, tree->next);
 	}
-
-	DEBUG_TEXT("map2json_createJsonString(%s, [map2json_tree_t *])... DONE", buffer);
-	return pos;
+	DEBUG_TEXT("map2json_createJsonString(%s, [map2json_tree_t *])... DONE", buffer->data);
 }
 
 char *map2json_create(map2json_t *obj) {
@@ -331,7 +309,7 @@ char *map2json_create(map2json_t *obj) {
 	map2json_createJsonString(obj->buffer, obj->tree);
 
 	DEBUG_PUT("map2json_create([map2json_t *])... ");
-	return obj->buffer;
+	return obj->buffer->data;
 }
 
 
@@ -369,7 +347,7 @@ void map2json_destroy(map2json_t *obj) {
 	DEBUG_PUT("map2json_destroy([map2json_t *])... ");
 	map2json_freePairsMemory(obj->pairs);
 	map2json_freeTreeMemory(obj->tree);
-	free(obj->buffer);
+	safe_destroy(obj->buffer);
 	free(obj);
 	DEBUG_PUT("map2json_destroy([map2json_t *])... DONE");
 }

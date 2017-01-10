@@ -94,7 +94,7 @@ int main(int argc, char **argv) {
 	printf("%s\n", map2json_create(map2jsonObj));
 
 #ifdef DEBUG
-	testValues(map, map2jsonObj->buffer);
+	testValues(map, map2jsonObj->buffer->data);
 #endif
 
 	map2json_destroy(map2jsonObj);
