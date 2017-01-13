@@ -25,3 +25,4 @@ add_test(NAME test_json2map_numberFloat COMMAND testcases test_json2map_numberFl
 add_test(NAME test_json2map_array COMMAND testcases test_json2map_array)
 add_test(NAME test_json2map_primitive COMMAND testcases test_json2map_primitive)
 add_test(NAME test_json2map_deepNesting COMMAND testcases test_json2map_deepNesting)
+add_test(NAME test_json2map_jsonNull COMMAND testcases test_json2map_jsonNull)

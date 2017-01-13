@@ -184,6 +184,10 @@ int json2map_parse(json2map_t *obj, char *jsonString) {
 
 	jsmn_parser p;
 	jsmntok_t *token;
+	
+	if ( jsonString == NULL ) {
+		return -1;
+	}
 
 	jsmn_init(&p);
 

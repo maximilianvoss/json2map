@@ -285,6 +285,21 @@ int test_json2map_deepNesting() {
 	return 0;
 }
 
+int test_json2map_jsonNull() {
+	keyvalue_t *map = (keyvalue_t *) calloc(sizeof(keyvalue_t), LIST_SIZE);
+
+	json2map_t *json2mapObj = json2map_init();
+	json2map_registerHook(json2mapObj, map, &json2map_hookMethod);
+	json2map_parse(json2mapObj, NULL);
+
+	ASSERTSTR("", map[0].key);
+	ASSERTSTR("", map[0].value);
+
+	json2map_destroy(json2mapObj);
+	free(map);
+	return 0;
+}
+
 
 int main(int argc, char **argv) {
 	TESTCALL("test_map2json_emptyMap", test_map2json_emptyMap);
@@ -306,6 +321,7 @@ int main(int argc, char **argv) {
 	TESTCALL("test_json2map_array", test_json2map_array);
 	TESTCALL("test_json2map_primitive", test_json2map_primitive);
 	TESTCALL("test_json2map_deepNesting", test_json2map_deepNesting);
+	TESTCALL("test_json2map_jsonNull", test_json2map_jsonNull);
 
 	return -1;
 }
