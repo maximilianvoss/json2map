@@ -26,6 +26,7 @@ map2json_t *map2json_init() {
 	obj = (map2json_t *) malloc(sizeof(map2json_t));
 	obj->buffer = safe_create(NULL);
 	obj->pairs = NULL;
+	obj->tree = NULL;
 
 	DEBUG_PUT("map2json_init()... DONE");
 	return obj;
