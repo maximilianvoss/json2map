@@ -10,7 +10,7 @@ map2json_tree_t *map2json_findTreeNode(map2json_tree_t *root, char *key);
 map2json_tree_t *map2json_createEmptyTreeObject(char *key);
 long map2json_getArrayId(char *key);
 void map2json_storeValues(map2json_tree_t *obj, char *value);
-map2json_tree_t *map2json_createTree(map2json_t *obj);
+void map2json_createTree(map2json_t *obj);
 void map2json_createJsonStringArray(csafestring_t *buffer, map2json_tree_t *tree);
 void map2json_freeTreeMemory(map2json_tree_t *obj);
 void map2json_freePairsMemory(map2json_keyvalue_t *pair);
@@ -190,7 +190,7 @@ map2json_tree_t *map2json_getArrayObject(map2json_tree_t *obj, long arrayId) {
 }
 
 
-map2json_tree_t *map2json_createTree(map2json_t *obj) {
+void map2json_createTree(map2json_t *obj) {
 	DEBUG_PUT("map2json_createTree([map2json_t *])... ");
 	map2json_tree_t *treeRoot;
 	map2json_tree_t *treeObj;
@@ -200,7 +200,7 @@ map2json_tree_t *map2json_createTree(map2json_t *obj) {
 	stringlib_tokens_t *token;
 	char *buffer;
 
-	treeRoot = map2json_createEmptyTreeObject(NULL);
+	obj->tree = map2json_createEmptyTreeObject(NULL);
 
 	pair = obj->pairs;
 	while ( pair != NULL ) {
@@ -243,7 +243,6 @@ map2json_tree_t *map2json_createTree(map2json_t *obj) {
 	}
 
 	DEBUG_PUT("map2json_createTree([map2json_t *])... DONE");
-	return treeRoot;
 }
 
 void map2json_createJsonStringArray(csafestring_t *buffer, map2json_tree_t *tree) {
@@ -312,7 +311,7 @@ void map2json_createJsonString(csafestring_t *buffer, map2json_tree_t *tree) {
 
 char *map2json_create(map2json_t *obj) {
 	DEBUG_PUT("map2json_create([map2json_t *])... ");
-	obj->tree = map2json_createTree(obj);
+	map2json_createTree(obj);
 	safe_strcpy(obj->buffer, "");
 	map2json_createJsonString(obj->buffer, obj->tree);
 
