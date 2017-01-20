@@ -124,6 +124,7 @@ long map2json_getArrayId(char *key) {
 	buffer[length - 1] = '\0';
 
 	if ( *key == JSON2MAP_MAP_ARRAY_COUNT ) {
+		free(buffer);
 		return ARRAYID_IS_COUNT;
 	}
 
@@ -195,6 +196,7 @@ map2json_tree_t *map2json_createTree(map2json_t *obj) {
 	map2json_tree_t *treeChild;
 	map2json_keyvalue_t *pair;
 	stringlib_tokens_t *tokens;
+	stringlib_tokens_t *token;
 	char *buffer;
 
 	treeRoot = map2json_createEmptyTreeObject(NULL);
@@ -202,11 +204,11 @@ map2json_tree_t *map2json_createTree(map2json_t *obj) {
 	pair = obj->pairs;
 	while ( pair != NULL ) {
 		tokens = stringlib_splitTokens(pair->key, JSON2MAP_MAP_OBJECT_SEPARATOR);
-
+		token = tokens;
 		treeObj = treeRoot;
 
-		while ( tokens != NULL ) {
-			buffer = stringlib_getToken(tokens, pair->key);
+		while ( token != NULL ) {
+			buffer = stringlib_getToken(token, pair->key);
 
 			long arrayId = ARRAYID_NOT_SET;
 			long pos = map2json_checkArrayObject(buffer);
@@ -232,10 +234,11 @@ map2json_tree_t *map2json_createTree(map2json_t *obj) {
 				treeObj = treeChild;
 			}
 			free(buffer);
-			tokens = tokens->next;
+			token = token->next;
 		}
 		map2json_storeValues(treeObj, pair->value);
 		pair = pair->next;
+		stringlib_freeTokens(tokens);
 	}
 
 	DEBUG_PUT("map2json_createTree([map2json_t *])... DONE");

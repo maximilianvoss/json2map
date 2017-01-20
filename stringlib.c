@@ -61,6 +61,15 @@ stringlib_tokens_t *stringlib_splitTokens(char *str, char chr) {
 	return tokens;
 }
 
+void stringlib_freeTokens(stringlib_tokens_t *tokens) {
+	stringlib_tokens_t *token;
+	while ( tokens != NULL ) {
+		token = tokens;
+		tokens = tokens->next;
+		free(token);
+	}
+}
+
 int stringlib_isInteger(char *str) {
 	char *ptr = str;
 
