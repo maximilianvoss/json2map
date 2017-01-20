@@ -324,6 +324,7 @@ void map2json_freeTreeMemory(map2json_tree_t *obj) {
 	DEBUG_PUT("map2json_freeTreeMemory([map2json_t *])... ");
 
 	if ( obj == NULL ) {
+		DEBUG_PUT("map2json_freeTreeMemory([map2json_t *])... DONE");
 		return;
 	}
 	map2json_freeTreeMemory(obj->arrayObjects);
@@ -354,6 +355,7 @@ void map2json_destroy(map2json_t *obj) {
 	DEBUG_PUT("map2json_destroy([map2json_t *])... ");
 	map2json_freePairsMemory(obj->pairs);
 	map2json_freeTreeMemory(obj->tree);
+	free(obj->tree);
 	safe_destroy(obj->buffer);
 	free(obj);
 	DEBUG_PUT("map2json_destroy([map2json_t *])... DONE");
