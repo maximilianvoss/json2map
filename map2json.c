@@ -354,6 +354,7 @@ void map2json_freeTreeMemory(map2json_tree_t *obj) {
 void map2json_freePairsMemory(map2json_keyvalue_t *pair) {
 	DEBUG_PUT("map2json_freePairsMemory([map2json_t *])... ");
 	if ( pair == NULL ) {
+		DEBUG_PUT("map2json_freePairsMemory([map2json_t *])... DONE");
 		return;
 	}
 	map2json_freePairsMemory(pair->next);
