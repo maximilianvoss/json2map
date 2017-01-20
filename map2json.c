@@ -201,6 +201,7 @@ void map2json_createTree(map2json_t *obj) {
 	char *buffer;
 
 	obj->tree = map2json_createEmptyTreeObject(NULL);
+	treeRoot = obj->tree;
 
 	pair = obj->pairs;
 	while ( pair != NULL ) {
