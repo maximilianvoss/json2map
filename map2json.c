@@ -316,7 +316,7 @@ char *map2json_create(map2json_t *obj) {
 	safe_strcpy(obj->buffer, "");
 	map2json_createJsonString(obj->buffer, obj->tree);
 
-	DEBUG_PUT("map2json_create([map2json_t *])... ");
+	DEBUG_PUT("map2json_create([map2json_t *])... DONE");
 	return obj->buffer->data;
 }
 
