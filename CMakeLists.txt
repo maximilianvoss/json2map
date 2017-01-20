@@ -16,7 +16,7 @@ set(SOURCE_FILES
         debugging.h
         config.h)
 
-set(CMAKE_VERBOSE_MAKEFILE on)
+#set(CMAKE_VERBOSE_MAKEFILE on)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -O3")
 
 add_library(json2map ${SOURCE_FILES})

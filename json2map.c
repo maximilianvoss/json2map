@@ -7,11 +7,11 @@
 #include "debugging.h"
 #include "stringlib.h"
 
-char *json2map_setTokenValue(char *jsonString, jsmntok_t *token);
-csafestring_t *json2map_concatPaths(char *parent, char *key, int arrayIdx);
-int json2map_calcEnd(jsmntok_t *token, int start, int end);
-int json2map_parseArray(json2map_t *obj, char *path, char *jsonString, jsmntok_t *token, int start, int end);
-int json2map_parseObject(json2map_t *obj, char *path, char *jsonString, jsmntok_t *token, int start, int end);
+static char *json2map_setTokenValue(char *jsonString, jsmntok_t *token);
+static csafestring_t *json2map_concatPaths(char *parent, char *key, int arrayIdx);
+static int json2map_calcEnd(jsmntok_t *token, int start, int end);
+static int json2map_parseArray(json2map_t *obj, char *path, char *jsonString, jsmntok_t *token, int start, int end);
+static int json2map_parseObject(json2map_t *obj, char *path, char *jsonString, jsmntok_t *token, int start, int end);
 
 json2map_t *json2map_init() {
 	DEBUG_PUT("json2map_init()... ");
@@ -26,7 +26,7 @@ void json2map_destroy(json2map_t *obj) {
 	DEBUG_PUT("json2map_destroy()... DONE");
 }
 
-char *json2map_setTokenValue(char *jsonString, jsmntok_t *token) {
+static char *json2map_setTokenValue(char *jsonString, jsmntok_t *token) {
 	DEBUG_TEXT("json2map_setTokenValue(%s, [jsmntok_t *])... ", jsonString);
 	char *buffer;
 	buffer = calloc(sizeof(char), token->end - token->start + 1);
@@ -36,7 +36,7 @@ char *json2map_setTokenValue(char *jsonString, jsmntok_t *token) {
 }
 
 
-csafestring_t *json2map_concatPaths(char *parent, char *key, int arrayIdx) {
+static csafestring_t *json2map_concatPaths(char *parent, char *key, int arrayIdx) {
 	DEBUG_TEXT("json2map_concatPaths(%s, %s, %d)...", parent, key, arrayIdx);
 
 	char arrayIdxBuff[10];
@@ -64,7 +64,7 @@ csafestring_t *json2map_concatPaths(char *parent, char *key, int arrayIdx) {
 }
 
 
-int json2map_calcEnd(jsmntok_t *token, int start, int end) {
+static int json2map_calcEnd(jsmntok_t *token, int start, int end) {
 	// TODO: optimize search
 	DEBUG_TEXT("json2map_calcEnd([jsmntok_t *], %d, %d)...", start, end);
 	int i;
@@ -81,7 +81,7 @@ int json2map_calcEnd(jsmntok_t *token, int start, int end) {
 }
 
 
-int json2map_parseArray(json2map_t *obj, char *path, char *jsonString, jsmntok_t *token, int start, int end) {
+static int json2map_parseArray(json2map_t *obj, char *path, char *jsonString, jsmntok_t *token, int start, int end) {
 	DEBUG_TEXT("json2map_parseArray([json2map_t *], %s, %s, [jsmntok_t *], %d, %d)...", path, jsonString, start, end);
 	int newEnd;
 	char *buffer;
@@ -129,7 +129,7 @@ int json2map_parseArray(json2map_t *obj, char *path, char *jsonString, jsmntok_t
 }
 
 
-int json2map_parseObject(json2map_t *obj, char *path, char *jsonString, jsmntok_t *token, int start, int end) {
+static int json2map_parseObject(json2map_t *obj, char *path, char *jsonString, jsmntok_t *token, int start, int end) {
 	DEBUG_TEXT("json2map_parseObject([json2map_t *], %s, %s, [jsmntok_t *], %d, %d)...", path, jsonString, start, end);
 
 	int newEnd;

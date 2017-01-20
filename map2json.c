@@ -4,17 +4,16 @@
 #include "debugging.h"
 #include "stringlib.h"
 
-void map2json_createJsonString(csafestring_t *buffer, map2json_tree_t *tree);
-long map2json_checkArrayObject(char *key);
-map2json_tree_t *map2json_findTreeNode(map2json_tree_t *root, char *key);
-map2json_tree_t *map2json_createEmptyTreeObject(char *key);
-long map2json_getArrayId(char *key);
-void map2json_storeValues(map2json_tree_t *obj, char *value);
-map2json_tree_t *map2json_createTree(map2json_t *obj);
-void map2json_createJsonStringArray(csafestring_t *buffer, map2json_tree_t *tree);
-void map2json_freeTreeMemory(map2json_tree_t *obj);
-void map2json_freePairsMemory(map2json_keyvalue_t *pair);
-void map2json_destroy(map2json_t *obj);
+static void map2json_createJsonString(csafestring_t *buffer, map2json_tree_t *tree);
+static long map2json_checkArrayObject(char *key);
+static map2json_tree_t *map2json_findTreeNode(map2json_tree_t *root, char *key);
+static map2json_tree_t *map2json_createEmptyTreeObject(char *key);
+static long map2json_getArrayId(char *key);
+static void map2json_storeValues(map2json_tree_t *obj, char *value);
+static map2json_tree_t *map2json_createTree(map2json_t *obj);
+static void map2json_createJsonStringArray(csafestring_t *buffer, map2json_tree_t *tree);
+static void map2json_freeTreeMemory(map2json_tree_t *obj);
+static void map2json_freePairsMemory(map2json_keyvalue_t *pair);
 
 #define ARRAYID_NOT_SET -1
 #define ARRAYID_IS_COUNT -2
@@ -53,7 +52,7 @@ void map2json_push(map2json_t *obj, char *key, char *value) {
 }
 
 
-long map2json_checkArrayObject(char *key) {
+static long map2json_checkArrayObject(char *key) {
 	DEBUG_TEXT("map2json_checkArrayObject(%s)... ", key);
 	char *ptr = strchr(key, JSON2MAP_MAP_ARRAY_START);
 	if ( ptr && strchr(key, JSON2MAP_MAP_ARRAY_END) ) {
@@ -64,7 +63,7 @@ long map2json_checkArrayObject(char *key) {
 }
 
 
-map2json_tree_t *map2json_findTreeNode(map2json_tree_t *root, char *key) {
+static map2json_tree_t *map2json_findTreeNode(map2json_tree_t *root, char *key) {
 	DEBUG_TEXT("map2json_findTreeNode([map2json_tree_t *], %s)... ", key);
 	map2json_tree_t *obj;
 
@@ -82,7 +81,7 @@ map2json_tree_t *map2json_findTreeNode(map2json_tree_t *root, char *key) {
 }
 
 
-map2json_tree_t *map2json_createEmptyTreeObject(char *key) {
+static map2json_tree_t *map2json_createEmptyTreeObject(char *key) {
 	DEBUG_TEXT("map2json_createEmptyTreeObject(%s)... ", key);
 	map2json_tree_t *obj;
 
@@ -107,7 +106,7 @@ map2json_tree_t *map2json_createEmptyTreeObject(char *key) {
 }
 
 
-long map2json_getArrayId(char *key) {
+static long map2json_getArrayId(char *key) {
 	DEBUG_TEXT("map2json_getArrayId(%s)... ", key);
 
 	char *buffer;
@@ -134,7 +133,7 @@ long map2json_getArrayId(char *key) {
 }
 
 
-void map2json_storeValues(map2json_tree_t *obj, char *value) {
+static void map2json_storeValues(map2json_tree_t *obj, char *value) {
 	DEBUG_TEXT("map2json_storeValues([map2json_tree_t *], %s)... ", value);
 
 	if ( obj->type == JSMN_ARRAY ) {
@@ -188,7 +187,7 @@ map2json_tree_t *map2json_getArrayObject(map2json_tree_t *obj, long arrayId) {
 }
 
 
-map2json_tree_t *map2json_createTree(map2json_t *obj) {
+static map2json_tree_t *map2json_createTree(map2json_t *obj) {
 	DEBUG_PUT("map2json_createTree([map2json_t *])... ");
 	map2json_tree_t *treeRoot;
 	map2json_tree_t *treeObj;
@@ -242,7 +241,7 @@ map2json_tree_t *map2json_createTree(map2json_t *obj) {
 	return treeRoot;
 }
 
-void map2json_createJsonStringArray(csafestring_t *buffer, map2json_tree_t *tree) {
+static void map2json_createJsonStringArray(csafestring_t *buffer, map2json_tree_t *tree) {
 	DEBUG_TEXT("map2json_createJsonStringArray(%s, [map2json_tree_t *])... ", buffer->data);
 
 	int i;
@@ -265,7 +264,7 @@ void map2json_createJsonStringArray(csafestring_t *buffer, map2json_tree_t *tree
 	DEBUG_TEXT("map2json_createJsonStringArray(%s, [map2json_tree_t *])... DONE", buffer->data);
 }
 
-void map2json_createJsonString(csafestring_t *buffer, map2json_tree_t *tree) {
+static void map2json_createJsonString(csafestring_t *buffer, map2json_tree_t *tree) {
 	DEBUG_TEXT("map2json_createJsonString(%s, [map2json_tree_t *])... ", buffer->data);
 
 	if ( tree == NULL ) {
@@ -317,7 +316,7 @@ char *map2json_create(map2json_t *obj) {
 }
 
 
-void map2json_freeTreeMemory(map2json_tree_t *obj) {
+static void map2json_freeTreeMemory(map2json_tree_t *obj) {
 	DEBUG_PUT("map2json_freeTreeMemory([map2json_t *])... ");
 
 	if ( obj == NULL ) {
@@ -334,7 +333,7 @@ void map2json_freeTreeMemory(map2json_tree_t *obj) {
 }
 
 
-void map2json_freePairsMemory(map2json_keyvalue_t *pair) {
+static void map2json_freePairsMemory(map2json_keyvalue_t *pair) {
 	DEBUG_PUT("map2json_freePairsMemory([map2json_t *])... ");
 	if ( pair == NULL ) {
 		return;
