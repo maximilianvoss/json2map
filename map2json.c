@@ -273,6 +273,7 @@ void map2json_createJsonString(csafestring_t *buffer, map2json_tree_t *tree) {
 	DEBUG_TEXT("map2json_createJsonString(%s, [map2json_tree_t *])... ", buffer->data);
 
 	if ( tree == NULL ) {
+		DEBUG_TEXT("map2json_createJsonString(%s, [map2json_tree_t *])... DONE", buffer->data);
 		return;
 	}
 
