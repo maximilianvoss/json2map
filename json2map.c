@@ -141,6 +141,7 @@ static int json2map_parseArray(json2map_t *obj, char *path, char *jsonString, js
 	char *buffer;
 	csafestring_t *pathBuff;
 	int count = 0;
+	int objectCount = 0;
 
 	int i = start;
 	while ( i < end && i > 0 ) {
@@ -151,7 +152,18 @@ static int json2map_parseArray(json2map_t *obj, char *path, char *jsonString, js
 		switch ( token[i].type ) {
 			case JSMN_OBJECT:
 				newEnd = json2map_calcEnd(token, i, end);
+
+				if ( obj->objectMapHook != NULL ) {
+					csafestring_t *tmp = safe_create(NULL);
+					safe_memset(tmp, '\0', token[i].end - token[i].start + 1);
+					safe_memcpy(tmp, &jsonString[token[i].start], token[i].end - token[i].start);
+					obj->objectMapHook(obj->objectMapData, pathBuff->data, tmp->data);
+					safe_destroy(tmp);
+					objectCount++;
+				}
+
 				i = json2map_parseObject(obj, pathBuff->data, jsonString, token, i + 1, newEnd + 1);
+
 				break;
 			case JSMN_STRING:
 			case JSMN_PRIMITIVE:
@@ -176,6 +188,10 @@ static int json2map_parseArray(json2map_t *obj, char *path, char *jsonString, js
 	stringlib_longToString(smallBuffer, count);
 	if ( obj->dataMapHook != NULL ) {
 		obj->dataMapHook(obj->dataMapData, pathBuff->data, smallBuffer);
+	}
+	stringlib_longToString(smallBuffer, objectCount);
+	if ( obj->objectMapHook != NULL ) {
+		obj->objectMapHook(obj->objectMapData, pathBuff->data, smallBuffer);
 	}
 	safe_destroy(pathBuff);
 
@@ -209,6 +225,15 @@ static int json2map_parseObject(json2map_t *obj, char *path, char *jsonString, j
 		switch ( token[i].type ) {
 			case JSMN_OBJECT:
 				newEnd = json2map_calcEnd(token, i, end);
+
+				if ( obj->objectMapHook != NULL ) {
+					csafestring_t *tmp = safe_create(NULL);
+					safe_memset(tmp, '\0', token[i].end - token[i].start + 1);
+					safe_memcpy(tmp, &jsonString[token[i].start], token[i].end - token[i].start);
+					obj->objectMapHook(obj->objectMapData, pathBuff->data, tmp->data);
+					safe_destroy(tmp);
+				}
+
 				i = json2map_parseObject(obj, pathBuff->data, jsonString, token, i + 1, newEnd + 1);
 				break;
 			case JSMN_STRING:

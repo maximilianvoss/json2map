@@ -6,7 +6,7 @@ compiler:
   - gcc
 
 before_script:
-  - CSAFESTRING_VERSION=1.7; export CSAFESTRING_VERSION
+  - CSAFESTRING_VERSION=1.8; export CSAFESTRING_VERSION
   
   - wget https://github.com/maximilianvoss/csafestring/archive/v${CSAFESTRING_VERSION}.tar.gz -O /tmp/csafestring.tar.gz
   - tar -xvzf /tmp/csafestring.tar.gz -C /tmp
