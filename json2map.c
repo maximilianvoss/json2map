@@ -16,6 +16,10 @@ static int json2map_parseObject(json2map_t *obj, char *path, char *jsonString, j
 json2map_t *json2map_init() {
 	DEBUG_PUT("json2map_init()... ");
 	json2map_t *obj = (json2map_t *) malloc(sizeof(json2map_t));
+	obj->dataMapData = NULL;
+	obj->dataMapHook = NULL;
+	obj->objectMapData = NULL;
+	obj->objectMapHook = NULL;
 	DEBUG_PUT("json2map_init()... DONE");
 	return obj;
 }
@@ -62,11 +66,18 @@ int json2map_parse(json2map_t *obj, char *jsonString) {
 }
 
 
-void json2map_registerHook(json2map_t *obj, void *data, void *method) {
-	DEBUG_PUT("json2map_registerHook([json2map_t *], [void *] [void *])... ");
-	obj->hookMethod = method;
-	obj->hookMethodData = data;
-	DEBUG_PUT("json2map_registerHook([json2map_t *], [void *] [void *])... DONE");
+void json2map_registerDataHook(json2map_t *obj, void *data, void *method) {
+	DEBUG_PUT("json2map_registerDataHook([json2map_t *], [void *] [void *])... ");
+	obj->dataMapHook = method;
+	obj->dataMapData = data;
+	DEBUG_PUT("json2map_registerDataHook([json2map_t *], [void *] [void *])... DONE");
+}
+
+void json2map_registerObjectHook(json2map_t *obj, void *data, void *method) {
+	DEBUG_PUT("json2map_registerObjectHook([json2map_t *], [void *] [void *])... ");
+	obj->objectMapHook = method;
+	obj->objectMapData = data;
+	DEBUG_PUT("json2map_registerObjectHook([json2map_t *], [void *] [void *])... DONE");
 }
 
 static char *json2map_setTokenValue(char *jsonString, jsmntok_t *token) {
@@ -130,6 +141,7 @@ static int json2map_parseArray(json2map_t *obj, char *path, char *jsonString, js
 	char *buffer;
 	csafestring_t *pathBuff;
 	int count = 0;
+	int objectCount = 0;
 
 	int i = start;
 	while ( i < end && i > 0 ) {
@@ -140,12 +152,25 @@ static int json2map_parseArray(json2map_t *obj, char *path, char *jsonString, js
 		switch ( token[i].type ) {
 			case JSMN_OBJECT:
 				newEnd = json2map_calcEnd(token, i, end);
+
+				if ( obj->objectMapHook != NULL ) {
+					csafestring_t *tmp = safe_create(NULL);
+					safe_memset(tmp, '\0', token[i].end - token[i].start + 1);
+					safe_memcpy(tmp, &jsonString[token[i].start], token[i].end - token[i].start);
+					obj->objectMapHook(obj->objectMapData, pathBuff->data, tmp->data);
+					safe_destroy(tmp);
+					objectCount++;
+				}
+
 				i = json2map_parseObject(obj, pathBuff->data, jsonString, token, i + 1, newEnd + 1);
+
 				break;
 			case JSMN_STRING:
 			case JSMN_PRIMITIVE:
 				buffer = json2map_setTokenValue(jsonString, &token[i]);
-				obj->hookMethod(obj->hookMethodData, pathBuff->data, buffer);
+				if ( obj->dataMapHook != NULL ) {
+					obj->dataMapHook(obj->dataMapData, pathBuff->data, buffer);
+				}
 				free(buffer);
 				i++;
 				break;
@@ -161,7 +186,13 @@ static int json2map_parseArray(json2map_t *obj, char *path, char *jsonString, js
 
 	char smallBuffer[25];
 	stringlib_longToString(smallBuffer, count);
-	obj->hookMethod(obj->hookMethodData, pathBuff->data, smallBuffer);
+	if ( obj->dataMapHook != NULL ) {
+		obj->dataMapHook(obj->dataMapData, pathBuff->data, smallBuffer);
+	}
+	stringlib_longToString(smallBuffer, objectCount);
+	if ( obj->objectMapHook != NULL ) {
+		obj->objectMapHook(obj->objectMapData, pathBuff->data, smallBuffer);
+	}
 	safe_destroy(pathBuff);
 
 	DEBUG_TEXT("json2map_parseArray([json2map_t *], %s, %s, [jsmntok_t *], %d, %d)... DONE", path, jsonString, start, end);
@@ -194,12 +225,23 @@ static int json2map_parseObject(json2map_t *obj, char *path, char *jsonString, j
 		switch ( token[i].type ) {
 			case JSMN_OBJECT:
 				newEnd = json2map_calcEnd(token, i, end);
+
+				if ( obj->objectMapHook != NULL ) {
+					csafestring_t *tmp = safe_create(NULL);
+					safe_memset(tmp, '\0', token[i].end - token[i].start + 1);
+					safe_memcpy(tmp, &jsonString[token[i].start], token[i].end - token[i].start);
+					obj->objectMapHook(obj->objectMapData, pathBuff->data, tmp->data);
+					safe_destroy(tmp);
+				}
+
 				i = json2map_parseObject(obj, pathBuff->data, jsonString, token, i + 1, newEnd + 1);
 				break;
 			case JSMN_STRING:
 			case JSMN_PRIMITIVE:
 				buffer = json2map_setTokenValue(jsonString, &token[i]);
-				obj->hookMethod(obj->hookMethodData, pathBuff->data, buffer);
+				if ( obj->dataMapHook != NULL ) {
+					obj->dataMapHook(obj->dataMapData, pathBuff->data, buffer);
+				}
 				free(buffer);
 				i++;
 				break;
