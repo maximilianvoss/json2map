@@ -42,7 +42,7 @@ void hookMethod(void *data, char *key, char *value) {
 void json2map() {
 
 	json2map_t *json2mapObj = json2map_init();
-	json2map_registerHook(json2mapObj, NULL, &hookMethod);
+	json2map_registerDataHook(json2mapObj, NULL, &hookMethod);
 	json2map_parse(json2mapObj, JSON_EXAMPLE);
 	json2map_destroy(json2mapObj);
 }

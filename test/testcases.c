@@ -133,7 +133,7 @@ int test_json2map_emptyJson() {
 	keyvalue_t *map = (keyvalue_t *) calloc(sizeof(keyvalue_t), LIST_SIZE);
 
 	json2map_t *json2mapObj = json2map_init();
-	json2map_registerHook(json2mapObj, map, &json2map_hookMethod);
+	json2map_registerDataHook(json2mapObj, map, &json2map_hookMethod);
 	json2map_parse(json2mapObj, "{}");
 
 	ASSERTSTR("", map[0].key);
@@ -148,7 +148,7 @@ int test_json2map_null() {
 	keyvalue_t *map = (keyvalue_t *) calloc(sizeof(keyvalue_t), LIST_SIZE);
 
 	json2map_t *json2mapObj = json2map_init();
-	json2map_registerHook(json2mapObj, map, &json2map_hookMethod);
+	json2map_registerDataHook(json2mapObj, map, &json2map_hookMethod);
 	json2map_parse(json2mapObj, "{\"nullpointer\":null}");
 
 	ASSERTSTR("nullpointer", map[0].key);
@@ -163,7 +163,7 @@ int test_json2map_true() {
 	keyvalue_t *map = (keyvalue_t *) calloc(sizeof(keyvalue_t), LIST_SIZE);
 
 	json2map_t *json2mapObj = json2map_init();
-	json2map_registerHook(json2mapObj, map, &json2map_hookMethod);
+	json2map_registerDataHook(json2mapObj, map, &json2map_hookMethod);
 	json2map_parse(json2mapObj, "{\"booleanValue\":true}");
 
 	ASSERTSTR("booleanValue", map[0].key);
@@ -178,7 +178,7 @@ int test_json2map_false() {
 	keyvalue_t *map = (keyvalue_t *) calloc(sizeof(keyvalue_t), LIST_SIZE);
 
 	json2map_t *json2mapObj = json2map_init();
-	json2map_registerHook(json2mapObj, map, &json2map_hookMethod);
+	json2map_registerDataHook(json2mapObj, map, &json2map_hookMethod);
 	json2map_parse(json2mapObj, "{\"booleanValue\":false}");
 
 	ASSERTSTR("booleanValue", map[0].key);
@@ -193,7 +193,7 @@ int test_json2map_numberInt() {
 	keyvalue_t *map = (keyvalue_t *) calloc(sizeof(keyvalue_t), LIST_SIZE);
 
 	json2map_t *json2mapObj = json2map_init();
-	json2map_registerHook(json2mapObj, map, &json2map_hookMethod);
+	json2map_registerDataHook(json2mapObj, map, &json2map_hookMethod);
 	json2map_parse(json2mapObj, "{\"number\":123456}");
 
 	ASSERTSTR("number", map[0].key);
@@ -208,7 +208,7 @@ int test_json2map_numberFloat() {
 	keyvalue_t *map = (keyvalue_t *) calloc(sizeof(keyvalue_t), LIST_SIZE);
 
 	json2map_t *json2mapObj = json2map_init();
-	json2map_registerHook(json2mapObj, map, &json2map_hookMethod);
+	json2map_registerDataHook(json2mapObj, map, &json2map_hookMethod);
 	json2map_parse(json2mapObj, "{\"number\":123456.789}");
 
 	ASSERTSTR("number", map[0].key);
@@ -223,7 +223,7 @@ int test_json2map_array() {
 	keyvalue_t *map = (keyvalue_t *) calloc(sizeof(keyvalue_t), LIST_SIZE);
 
 	json2map_t *json2mapObj = json2map_init();
-	json2map_registerHook(json2mapObj, map, &json2map_hookMethod);
+	json2map_registerDataHook(json2mapObj, map, &json2map_hookMethod);
 	json2map_parse(json2mapObj, "{\"array\":[{\"object1\":{\"key1\":\"value1\",\"key2\":2}},{\"array2\":[\"test\",\"test2\"]},\"b\",1]}");
 
 	ASSERTSTR("array[0].object1.key1", map[0].key);
@@ -259,7 +259,7 @@ int test_json2map_primitive() {
 	keyvalue_t *map = (keyvalue_t *) calloc(sizeof(keyvalue_t), LIST_SIZE);
 
 	json2map_t *json2mapObj = json2map_init();
-	json2map_registerHook(json2mapObj, map, &json2map_hookMethod);
+	json2map_registerDataHook(json2mapObj, map, &json2map_hookMethod);
 	json2map_parse(json2mapObj, "{\"fakePrimitive\":function()}");
 
 	ASSERTSTR("fakePrimitive", map[0].key);
@@ -274,7 +274,7 @@ int test_json2map_deepNesting() {
 	keyvalue_t *map = (keyvalue_t *) calloc(sizeof(keyvalue_t), LIST_SIZE);
 
 	json2map_t *json2mapObj = json2map_init();
-	json2map_registerHook(json2mapObj, map, &json2map_hookMethod);
+	json2map_registerDataHook(json2mapObj, map, &json2map_hookMethod);
 	json2map_parse(json2mapObj, "{\"lvl1\":{\"lvl2\":{\"lvl3\":{\"lvl4\":{\"lvl5\":[{\"lvl6\":{\"lvl7\":{\"lvl8\":[{\"lvl9\":123456789}]}}}]}}}}}");
 
 	ASSERTSTR("lvl1.lvl2.lvl3.lvl4.lvl5[0].lvl6.lvl7.lvl8[0].lvl9", map[0].key);
@@ -289,7 +289,7 @@ int test_json2map_jsonNull() {
 	keyvalue_t *map = (keyvalue_t *) calloc(sizeof(keyvalue_t), LIST_SIZE);
 
 	json2map_t *json2mapObj = json2map_init();
-	json2map_registerHook(json2mapObj, map, &json2map_hookMethod);
+	json2map_registerDataHook(json2mapObj, map, &json2map_hookMethod);
 	json2map_parse(json2mapObj, NULL);
 
 	ASSERTSTR("", map[0].key);
@@ -297,6 +297,13 @@ int test_json2map_jsonNull() {
 
 	json2map_destroy(json2mapObj);
 	free(map);
+	return 0;
+}
+
+int test_json2map_noDataHook() {
+	json2map_t *json2mapObj = json2map_init();
+	json2map_parse(json2mapObj, NULL);
+	json2map_destroy(json2mapObj);
 	return 0;
 }
 
@@ -322,6 +329,7 @@ int main(int argc, char **argv) {
 	TESTCALL("test_json2map_primitive", test_json2map_primitive);
 	TESTCALL("test_json2map_deepNesting", test_json2map_deepNesting);
 	TESTCALL("test_json2map_jsonNull", test_json2map_jsonNull);
+	TESTCALL("test_json2map_noDataHook", test_json2map_noDataHook);
 
 	return -1;
 }
