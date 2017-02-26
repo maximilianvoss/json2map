@@ -1,8 +1,9 @@
 cmake_minimum_required(VERSION 2.8)
-project(json2map)
 
-set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules ${CMAKE_MODULE_PATH})
-include("${CMAKE_SOURCE_DIR}/cmake/include.cmake")
+add_subdirectory(libs/csafestring)
+include_directories(libs/csafestring)
+
+project(json2map)
 
 set(SOURCE_FILES
         jsmn.c
@@ -20,7 +21,7 @@ set(SOURCE_FILES
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -O3")
 
 add_library(json2map ${SOURCE_FILES})
-target_link_libraries(json2map ${CSAFESTRING_LIBRARY})
+target_link_libraries(json2map csafestring)
 install(TARGETS json2map DESTINATION /usr/local/lib)
 install(FILES json2map.h map2json.h jsmn.h DESTINATION /usr/local/include)
 
