@@ -19,16 +19,17 @@ static map2json_tree_t *map2json_getArrayObject(map2json_tree_t *obj, long array
 #define ARRAYID_NOT_SET -1
 #define ARRAYID_IS_COUNT -2
 
-map2json_t *map2json_init() {
-	DEBUG_PUT("map2json_init()... ");
+map2json_t *map2json_init(char *prefix) {
+	DEBUG_TEXT("map2json_init(%s)... ", prefix);
 	map2json_t *obj;
 
 	obj = (map2json_t *) malloc(sizeof(map2json_t));
 	obj->buffer = safe_create(NULL);
 	obj->pairs = NULL;
 	obj->tree = NULL;
+	obj->prefix = prefix;
 
-	DEBUG_PUT("map2json_init()... DONE");
+	DEBUG_TEXT("map2json_init(%s)... DONE", prefix);
 	return obj;
 }
 
@@ -37,14 +38,26 @@ void map2json_push(map2json_t *obj, char *key, char *value) {
 	DEBUG_TEXT("map2json_push([map2json_t *], %s, %s)... ", key, value);
 
 	map2json_keyvalue_t *pair = (map2json_keyvalue_t *) malloc(sizeof(map2json_keyvalue_t));
+	char *realKey;
 
-	size_t keyLen = strlen(key) + 1;
+	if ( obj->prefix == NULL ) {
+		realKey = key;
+	} else {
+		size_t prefixLength = strlen(obj->prefix);
+		if ( !strncmp(key, obj->prefix, prefixLength) ) {
+			realKey = &key[prefixLength + 1];
+		} else {
+			return;
+		}
+	}
+
+	size_t keyLen = strlen(realKey) + 1;
 	size_t valLen = strlen(value) + 1;
 
 	pair->key = (char *) calloc(sizeof(char), keyLen);
 	pair->value = (char *) calloc(sizeof(char), valLen);
 
-	memcpy(pair->key, key, keyLen);
+	memcpy(pair->key, realKey, keyLen);
 	memcpy(pair->value, value, valLen);
 
 	pair->next = obj->pairs;

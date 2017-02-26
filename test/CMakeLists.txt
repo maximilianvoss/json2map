@@ -15,6 +15,7 @@ add_test(NAME test_map2json_numberFloat COMMAND ${CMAKE_PROJECT_NAME}_testcases 
 add_test(NAME test_map2json_array COMMAND ${CMAKE_PROJECT_NAME}_testcases test_map2json_array)
 add_test(NAME test_map2json_primitive COMMAND ${CMAKE_PROJECT_NAME}_testcases test_map2json_primitive)
 add_test(NAME test_map2json_deepNesting COMMAND ${CMAKE_PROJECT_NAME}_testcases test_map2json_deepNesting)
+add_test(NAME test_map2json_prefix COMMAND ${CMAKE_PROJECT_NAME}_testcases test_map2json_prefix)
 
 add_test(NAME test_json2map_emptyJson COMMAND ${CMAKE_PROJECT_NAME}_testcases test_json2map_emptyJson)
 add_test(NAME test_json2map_null COMMAND ${CMAKE_PROJECT_NAME}_testcases test_json2map_null)
@@ -28,3 +29,4 @@ add_test(NAME test_json2map_deepNesting COMMAND ${CMAKE_PROJECT_NAME}_testcases 
 add_test(NAME test_json2map_jsonNull COMMAND ${CMAKE_PROJECT_NAME}_testcases test_json2map_jsonNull)
 add_test(NAME test_json2map_noDataHook COMMAND ${CMAKE_PROJECT_NAME}_testcases test_json2map_noDataHook)
 add_test(NAME test_json2map_objectHook COMMAND ${CMAKE_PROJECT_NAME}_testcases test_json2map_objectHook)
+add_test(NAME test_json2map_prefix COMMAND ${CMAKE_PROJECT_NAME}_testcases test_json2map_prefix)
