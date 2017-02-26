@@ -31,7 +31,7 @@ void json2map_destroy(json2map_t *obj) {
 }
 
 
-int json2map_parse(json2map_t *obj, char *jsonString) {
+int json2map_parse(json2map_t *obj, char *prefix, char *jsonString) {
 	DEBUG_TEXT("json2map_parseObject([json2map_t *], %s)... ", jsonString);
 
 	jsmn_parser p;
@@ -60,7 +60,7 @@ int json2map_parse(json2map_t *obj, char *jsonString) {
 	}
 
 	DEBUG_TEXT("json2map_parseObject([json2map_t *], %s)... DONE", jsonString);
-	int retVal = json2map_parseObject(obj, NULL, jsonString, token, 1, count);
+	int retVal = json2map_parseObject(obj, prefix, jsonString, token, 1, count);
 	free(token);
 	return retVal;
 }

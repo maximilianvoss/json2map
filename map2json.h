@@ -25,9 +25,10 @@ typedef struct s_map2json {
 	map2json_keyvalue_t *pairs;
 	map2json_tree_t *tree;
 	csafestring_t *buffer;
+	char *prefix;
 } map2json_t;
 
-map2json_t *map2json_init();
+map2json_t *map2json_init(char *prefix);
 void map2json_push(map2json_t *obj, char *key, char *value);
 char *map2json_create(map2json_t *obj);
 void map2json_destroy(map2json_t *obj);
