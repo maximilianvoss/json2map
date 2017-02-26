@@ -43,12 +43,12 @@ void json2map() {
 
 	json2map_t *json2mapObj = json2map_init();
 	json2map_registerDataHook(json2mapObj, NULL, &hookMethod);
-	json2map_parse(json2mapObj, JSON_EXAMPLE);
+	json2map_parse(json2mapObj, NULL, JSON_EXAMPLE);
 	json2map_destroy(json2mapObj);
 }
 
 void map2json() {
-	map2json_t *map2jsonObj = map2json_init();
+	map2json_t *map2jsonObj = map2json_init(NULL);
 	map2json_push(map2jsonObj, "test._id.$oid", "566950d1afc4a3c1d86fcdfb");
 	map2json_push(map2jsonObj, "test.name", "picture");
 	map2json_push(map2jsonObj, "test.file", "/var/www/html/pictureIn.png");
