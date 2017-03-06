@@ -54,6 +54,7 @@ int json2map_parse(json2map_t *obj, char *prefix, char *jsonString) {
 	jsmn_parse(&p, jsonString, strlen(jsonString), token, count);
 
 	if ( count < 1 || token[0].type != JSMN_OBJECT ) {
+		free(token);
 		DEBUG_TEXT("json2map_parseObject([json2map_t *], %s): ERROR: first object needs to be a valid object", jsonString);
 		return -1;
 	}
