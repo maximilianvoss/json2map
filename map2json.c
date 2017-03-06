@@ -47,12 +47,18 @@ void map2json_push(map2json_t *obj, char *key, char *value) {
 		if ( !strncmp(key, obj->prefix, prefixLength) ) {
 			realKey = &key[prefixLength + 1];
 		} else {
+			DEBUG_TEXT("map2json_push([map2json_t *], %s, %s)... DONE", key, value);
 			return;
 		}
 	}
 
 	size_t keyLen = strlen(realKey) + 1;
 	size_t valLen = strlen(value) + 1;
+
+	if ( realKey[keyLen - 3] == JSON2MAP_MAP_ARRAY_START && realKey[keyLen - 2] == JSON2MAP_MAP_OBJECT_CODE && realKey[keyLen - 1] == JSON2MAP_MAP_ARRAY_END ) {
+		DEBUG_TEXT("map2json_push([map2json_t *], %s, %s)... DONE", key, value);
+		return;
+	}
 
 	pair->key = (char *) calloc(sizeof(char), keyLen);
 	pair->value = (char *) calloc(sizeof(char), valLen);
