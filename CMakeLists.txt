@@ -20,10 +20,12 @@ set(SOURCE_FILES
 #set(CMAKE_VERBOSE_MAKEFILE on)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -O3")
 
-add_library(json2map ${SOURCE_FILES})
-target_link_libraries(json2map csafestring)
-install(TARGETS json2map DESTINATION /usr/local/lib)
-install(FILES json2map.h map2json.h jsmn.h DESTINATION /usr/local/include)
+if (NOT TARGET json2map)
+    add_library(json2map ${SOURCE_FILES})
+    target_link_libraries(json2map csafestring)
+    install(TARGETS json2map DESTINATION /usr/local/lib)
+    install(FILES json2map.h map2json.h jsmn.h DESTINATION /usr/local/include)
+endif ()
 
 enable_testing()
 add_subdirectory(test)
