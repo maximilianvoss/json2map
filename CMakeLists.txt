@@ -14,7 +14,7 @@ set(SOURCE_FILES
         map2json.h
         stringlib.c
         stringlib.h
-        debugging.h
+        logging.h
         config.h)
 
 #set(CMAKE_VERBOSE_MAKEFILE on)
