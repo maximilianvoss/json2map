@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <csafestring.h>
 #include "jsmn.h"
-#include "debugging.h"
+#include "logging.h"
 #include "stringlib.h"
 
 static char *json2map_setTokenValue(char *jsonString, jsmntok_t *token);
@@ -14,38 +14,40 @@ static int json2map_parseArray(json2map_t *obj, char *path, char *jsonString, js
 static int json2map_parseObject(json2map_t *obj, char *path, char *jsonString, jsmntok_t *token, int start, int end);
 
 json2map_t *json2map_init(char saveSubobjectString) {
-	DEBUG_PUT("json2map_init()... ");
+	LOGGING_DEBUG("START");
 	json2map_t *obj = (json2map_t *) malloc(sizeof(json2map_t));
 	obj->dataMapData = NULL;
 	obj->dataMapHook = NULL;
 	obj->saveSubobjectString = saveSubobjectString;
-	DEBUG_PUT("json2map_init()... DONE");
+	LOGGING_DEBUG("DONE");
 	return obj;
 }
 
 void json2map_destroy(json2map_t *obj) {
-	DEBUG_PUT("json2map_destroy()... ");
+	LOGGING_DEBUG("START");
 	free(obj);
-	DEBUG_PUT("json2map_destroy()... DONE");
+	LOGGING_DEBUG("DONE");
 }
 
 
 int json2map_parse(json2map_t *obj, char *prefix, char *jsonString) {
-	DEBUG_TEXT("json2map_parseObject([json2map_t *], %s)... ", jsonString);
+	LOGGING_DEBUG("START");
 
 	jsmn_parser p;
 	jsmntok_t *token;
 
 	if ( jsonString == NULL ) {
+		LOGGING_DEBUG("jsonString == NULL");
+		LOGGING_DEBUG("DONE");
 		return -1;
 	}
 
 	jsmn_init(&p);
 
 	int count = jsmn_parse(&p, jsonString, strlen(jsonString), NULL, 0);
-	DEBUG_TEXT("json2map_parseObject([json2map_t *], %s): Count: %d", jsonString, count);
+	LOGGING_TRACE("Count = %d", count);
 	if ( count < 0 ) {
-		DEBUG_TEXT("json2map_parseObject([json2map_t *], %s): ERROR: no object found", jsonString);
+		LOGGING_WARN("no object found. jsonString=%s", jsonString);
 		return -1;
 	}
 
@@ -55,36 +57,41 @@ int json2map_parse(json2map_t *obj, char *prefix, char *jsonString) {
 
 	if ( count < 1 || token[0].type != JSMN_OBJECT ) {
 		free(token);
-		DEBUG_TEXT("json2map_parseObject([json2map_t *], %s): ERROR: first object needs to be a valid object", jsonString);
+		LOGGING_ERROR("first object needs to be a valid object. jsonString=%s", jsonString);
 		return -1;
 	}
 
-	DEBUG_TEXT("json2map_parseObject([json2map_t *], %s)... DONE", jsonString);
+	
 	int retVal = json2map_parseObject(obj, prefix, jsonString, token, 1, count);
 	free(token);
+	LOGGING_TRACE("retVal=%d", retVal);
+	LOGGING_DEBUG("DONE");
 	return retVal;
 }
 
 
 void json2map_registerDataHook(json2map_t *obj, void *data, void *method) {
-	DEBUG_PUT("json2map_registerDataHook([json2map_t *], [void *] [void *])... ");
+	LOGGING_DEBUG("START");
 	obj->dataMapHook = method;
 	obj->dataMapData = data;
-	DEBUG_PUT("json2map_registerDataHook([json2map_t *], [void *] [void *])... DONE");
+	LOGGING_DEBUG("DONE");
 }
 
 static char *json2map_setTokenValue(char *jsonString, jsmntok_t *token) {
-	DEBUG_TEXT("json2map_setTokenValue(%s, [jsmntok_t *])... ", jsonString);
+	LOGGING_DEBUG("START");
 	char *buffer;
 	buffer = calloc(sizeof(char), token->end - token->start + 1);
 	memcpy(buffer, jsonString + token->start, token->end - token->start);
-	DEBUG_TEXT("json2map_setTokenValue(%s, [jsmntok_t *])... DONE", jsonString);
+	
+	LOGGING_TRACE("buffer=%s", buffer);
+	LOGGING_DEBUG("DONE");
 	return buffer;
 }
 
 
 static csafestring_t *json2map_concatPaths(char *parent, char *key, int arrayIdx) {
-	DEBUG_TEXT("json2map_concatPaths(%s, %s, %d)...", parent, key, arrayIdx);
+	LOGGING_DEBUG("START");
+	LOGGING_TRACE("parent=%s, key=%s, arrayIdx=%d", parent, key, arrayIdx);
 
 	char arrayIdxBuff[10];
 	csafestring_t *buffer = safe_create(NULL);
@@ -106,30 +113,31 @@ static csafestring_t *json2map_concatPaths(char *parent, char *key, int arrayIdx
 		safe_strcat(buffer, arrayIdxBuff);
 	}
 
-	DEBUG_TEXT("json2map_concatPaths(%s, %s, %d)... DONE", parent, key, arrayIdx);
+	LOGGING_TRACE("buffer=%s", buffer->data);
+	LOGGING_DEBUG("DONE");
 	return buffer;
 }
 
 
 static int json2map_calcEnd(jsmntok_t *token, int start, int end) {
 	// TODO: optimize search
-	DEBUG_TEXT("json2map_calcEnd([jsmntok_t *], %d, %d)...", start, end);
+	LOGGING_DEBUG("START");
 	int i;
 	for ( i = start + 1; i < end; i++ ) {
 		if ( token[i].start > token[start].end ) {
-			DEBUG_TEXT("json2map_calcEnd([jsmntok_t *], %d, %d): return value=%d", start, end, i - 1);
-			DEBUG_TEXT("json2map_calcEnd([jsmntok_t *], %d, %d)... DONE", start, end);
+			LOGGING_TRACE("return value=%d", i - 1);
+			LOGGING_DEBUG("DONE");
 			return i - 1;
 		}
 	}
-	DEBUG_TEXT("json2map_calcEnd([jsmntok_t *], %d, %d): return value=%d", start, end, end - 1);
-	DEBUG_TEXT("json2map_calcEnd([jsmntok_t *], %d, %d)... DONE", start, end);
+	LOGGING_TRACE("return value=%d", end - 1);
+	LOGGING_DEBUG("DONE");
 	return end - 1;
 }
 
 
 static int json2map_parseArray(json2map_t *obj, char *path, char *jsonString, jsmntok_t *token, int start, int end) {
-	DEBUG_TEXT("json2map_parseArray([json2map_t *], %s, %s, [jsmntok_t *], %d, %d)...", path, jsonString, start, end);
+	LOGGING_DEBUG("START");
 	int newEnd;
 	char *buffer;
 	csafestring_t *pathBuff;
@@ -144,6 +152,7 @@ static int json2map_parseArray(json2map_t *obj, char *path, char *jsonString, js
 
 		switch ( token[i].type ) {
 			case JSMN_OBJECT:
+				LOGGING_TRACE("JSMN_OBJECT");
 				newEnd = json2map_calcEnd(token, i, end);
 
 				if ( obj->saveSubobjectString ) {
@@ -167,6 +176,7 @@ static int json2map_parseArray(json2map_t *obj, char *path, char *jsonString, js
 				break;
 			case JSMN_STRING:
 			case JSMN_PRIMITIVE:
+				LOGGING_TRACE("JSMN_PRIMITIVE");
 				buffer = json2map_setTokenValue(jsonString, &token[i]);
 				if ( obj->dataMapHook != NULL ) {
 					obj->dataMapHook(obj->dataMapData, pathBuff->data, buffer);
@@ -175,7 +185,8 @@ static int json2map_parseArray(json2map_t *obj, char *path, char *jsonString, js
 				i++;
 				break;
 			default:
-				DEBUG_TEXT("json2map_parseArray([json2map_t *], %s, %s, [jsmntok_t *], %d, %d): ERROR: Not defined type", path, jsonString, start, end);
+				LOGGING_ERROR("Not defined type. jsonString=%s", jsonString);
+				LOGGING_DEBUG("DONE");
 				return -1;
 		}
 
@@ -191,16 +202,19 @@ static int json2map_parseArray(json2map_t *obj, char *path, char *jsonString, js
 	}
 	safe_destroy(pathBuff);
 
-	DEBUG_TEXT("json2map_parseArray([json2map_t *], %s, %s, [jsmntok_t *], %d, %d)... DONE", path, jsonString, start, end);
 	if ( i < 0 ) {
+		LOGGING_TRACE("return=%d", i)
+		LOGGING_DEBUG("DONE");
 		return i;
 	}
+	LOGGING_TRACE("return=%d", end)
+	LOGGING_DEBUG("DONE");
 	return end;
 }
 
 
 static int json2map_parseObject(json2map_t *obj, char *path, char *jsonString, jsmntok_t *token, int start, int end) {
-	DEBUG_TEXT("json2map_parseObject([json2map_t *], %s, %s, [jsmntok_t *], %d, %d)...", path, jsonString, start, end);
+	LOGGING_DEBUG("START");
 
 	int newEnd;
 	char *buffer;
@@ -214,13 +228,15 @@ static int json2map_parseObject(json2map_t *obj, char *path, char *jsonString, j
 			pathBuff = json2map_concatPaths(path, buffer, -1);
 			free(buffer);
 		} else {
-			DEBUG_TEXT("json2map_parseObject([json2map_t *], %s, %s, [jsmntok_t *], %d, %d): ERROR: Name of object has to be a string", path, jsonString, start, end);
+			LOGGING_ERROR("Name of object has to be a string");
+			LOGGING_DEBUG("DONE");
 			return -1;
 		}
 		i++;
 
 		switch ( token[i].type ) {
 			case JSMN_OBJECT:
+				LOGGING_TRACE("JSMN_OBJECT");
 				newEnd = json2map_calcEnd(token, i, end);
 
 				if ( obj->saveSubobjectString ) {
@@ -242,6 +258,7 @@ static int json2map_parseObject(json2map_t *obj, char *path, char *jsonString, j
 				break;
 			case JSMN_STRING:
 			case JSMN_PRIMITIVE:
+				LOGGING_TRACE("JSMN_PRIMITIVE");
 				buffer = json2map_setTokenValue(jsonString, &token[i]);
 				if ( obj->dataMapHook != NULL ) {
 					obj->dataMapHook(obj->dataMapData, pathBuff->data, buffer);
@@ -250,20 +267,25 @@ static int json2map_parseObject(json2map_t *obj, char *path, char *jsonString, j
 				i++;
 				break;
 			case JSMN_ARRAY:
+				LOGGING_TRACE("JSMN_ARRAY");
 				newEnd = json2map_calcEnd(token, i, end);
 				i = json2map_parseArray(obj, pathBuff->data, jsonString, token, i + 1, newEnd + 1);
 				break;
 			default:
-				DEBUG_TEXT("json2map_parseObject([json2map_t *], %s, %s, [jsmntok_t *], %d, %d): ERROR: Not defined type", path, jsonString, start, end);
+				LOGGING_ERROR("Not defined type");
+				LOGGING_DEBUG("DONE");
 				return -1;
 		}
 		safe_destroy(pathBuff);
 	}
 
-	DEBUG_TEXT("json2map_parseObject([json2map_t *], %s, %s, [jsmntok_t *], %d, %d)... DONE", path, jsonString, start, end);
 	if ( i < 0 ) {
+		LOGGING_TRACE("return=%d", i);
+		LOGGING_DEBUG("DONE");
 		return i;
 	}
+	LOGGING_TRACE("return=%d", end);
+	LOGGING_DEBUG("DONE");
 	return end;
 }
 
