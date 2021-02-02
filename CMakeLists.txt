@@ -1,9 +1,11 @@
 cmake_minimum_required(VERSION 2.8)
-
-add_subdirectory(libs/csafestring)
-include_directories(libs/csafestring)
-
 project(json2map)
+
+set(CMAKE_C_STANDARD 99)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
+
+find_package(CSAFESTRING REQUIRED)
+include_directories(${CSAFESTRING_INCLUDE_DIR})
 
 set(SOURCE_FILES
         jsmn.c
@@ -17,14 +19,13 @@ set(SOURCE_FILES
         logging.h
         config.h)
 
-#set(CMAKE_VERBOSE_MAKEFILE on)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -O3")
 
 if (NOT TARGET json2map)
     add_library(json2map ${SOURCE_FILES})
-    target_link_libraries(json2map csafestring)
-    install(TARGETS json2map DESTINATION /usr/local/lib)
-    install(FILES json2map.h map2json.h jsmn.h DESTINATION /usr/local/include)
+    target_link_libraries(json2map ${CSAFESTRING_LIBRARIES})
+    install(TARGETS json2map DESTINATION lib)
+    install(FILES json2map.h map2json.h jsmn.h DESTINATION include)
 endif ()
 
 enable_testing()

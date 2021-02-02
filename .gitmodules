@@ -1,4 +1,0 @@
-[submodule "libs/csafestring"]
-	path = libs/csafestring
-	url = https://github.com/maximilianvoss/csafestring.git
-	branch = master
